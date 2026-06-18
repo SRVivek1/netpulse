@@ -8,6 +8,7 @@ export interface IpData {
   region: string | null;
   regionCode: string | null;
   country: string | null;
+  countryName: string | null;
   postalCode: string | null;
   continent: string | null;
   timezone: string | null;
@@ -17,6 +18,8 @@ export interface IpData {
   tlsVersion: string | null;
   tlsCipher: string | null;
   clientTcpRtt: number | null;
+  requestPriority: string | null;
+  clientAcceptEncoding: string | null;
   isEU: boolean;
   servedAt: string;
 }

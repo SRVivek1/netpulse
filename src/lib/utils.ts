@@ -26,3 +26,22 @@ export function formatCoords(lat: number | null, lon: number | null): string {
 export function formatLocation(...parts: (string | null | undefined)[]): string {
   return parts.filter(Boolean).join(', ') || 'Location unavailable';
 }
+
+/** Convert a 2-letter ISO country code to a flag emoji. */
+export function countryFlag(code: string | null): string {
+  if (!code || code.length !== 2) return '';
+  return Array.from(code.toUpperCase())
+    .map(c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0)))
+    .join('');
+}
+
+const CONTINENT_NAMES: Record<string, string> = {
+  AF: 'Africa', AN: 'Antarctica', AS: 'Asia', EU: 'Europe',
+  NA: 'North America', OC: 'Oceania', SA: 'South America',
+};
+
+/** Expand a 2-letter continent code to its full name. */
+export function continentName(code: string | null): string | null {
+  if (!code) return null;
+  return CONTINENT_NAMES[code] ?? code;
+}

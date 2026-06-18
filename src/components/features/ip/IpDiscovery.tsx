@@ -1,15 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import {
-  Globe, GitBranch, MapPin, Zap,
-  Wifi, AlertTriangle
+  Globe, GitBranch, MapPin, Zap, Monitor, Wifi,
+  AlertTriangle
 } from 'lucide-react';
 import type { IpData } from '../../../types/api';
 import { Card, CardHeader, CardBody } from '../../ui/Card';
 import { DataRow } from '../../ui/DataRow';
 import { Badge } from '../../ui/Badge';
 import { CopyButton } from '../../ui/CopyButton';
-import { formatCoords, formatLocation } from '../../../lib/utils';
+import { formatCoords, formatLocation, countryFlag, continentName } from '../../../lib/utils';
 
 // ── Skeleton ──────────────────────────────────────────────────────────────
 function IpSkeleton() {
@@ -24,7 +24,7 @@ function IpSkeleton() {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
-        {[...Array(3)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <div key={i} className="skeleton h-44 rounded-xl" />
         ))}
       </div>
@@ -50,7 +50,7 @@ function IpError({ message, onRetry }: { message: string; onRetry: () => void })
   );
 }
 
-// ── Protocol badge variant ────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────
 function protoBadgeVariant(proto: string | null) {
   if (!proto) return 'slate' as const;
   if (proto.includes('3')) return 'orange' as const;
@@ -58,11 +58,48 @@ function protoBadgeVariant(proto: string | null) {
   return 'slate' as const;
 }
 
+interface BrowserInfo {
+  language: string;
+  platform: string;
+  cores: number | null;
+  memory: number | null;
+  connectionType: string | null;
+  connectionRtt: number | null;
+  connectionDownlink: number | null;
+  cookiesEnabled: boolean;
+  doNotTrack: string | null;
+  screenResolution: string;
+  colorDepth: number;
+  touchSupport: boolean;
+  timezone: string;
+}
+
+function getBrowserInfo(): BrowserInfo {
+  const nav = navigator as any;
+  const conn = nav.connection ?? nav.mozConnection ?? nav.webkitConnection ?? null;
+  return {
+    language: navigator.language || '—',
+    platform: nav.userAgentData?.platform ?? navigator.platform ?? '—',
+    cores: navigator.hardwareConcurrency ?? null,
+    memory: nav.deviceMemory ?? null,
+    connectionType: conn?.effectiveType ?? null,
+    connectionRtt: conn?.rtt ?? null,
+    connectionDownlink: conn?.downlink ?? null,
+    cookiesEnabled: navigator.cookieEnabled,
+    doNotTrack: navigator.doNotTrack,
+    screenResolution: `${screen.width} × ${screen.height}`,
+    colorDepth: screen.colorDepth,
+    touchSupport: navigator.maxTouchPoints > 0,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+}
+
 // ── Main component ────────────────────────────────────────────────────────
 export default function IpDiscovery() {
   const [data, setData] = useState<IpData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [browser, setBrowser] = useState<BrowserInfo | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -71,6 +108,7 @@ export default function IpDiscovery() {
       const res = await fetch('/api/ip');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
+      setBrowser(getBrowserInfo());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
@@ -84,6 +122,8 @@ export default function IpDiscovery() {
   if (error || !data) return <IpError message={error ?? 'No data'} onRetry={load} />;
 
   const isIPv6 = data.ipVersion === 'IPv6';
+  const flag = countryFlag(data.country);
+  const continent = continentName(data.continent);
 
   return (
     <div>
@@ -102,11 +142,12 @@ export default function IpDiscovery() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Badge variant={isIPv6 ? 'blue' : 'green'}>
-            {data.ipVersion}
-          </Badge>
-          {isIPv6 && <Badge variant="slate">Dual-Stack Capable</Badge>}
+          <Badge variant={isIPv6 ? 'blue' : 'green'}>{data.ipVersion}</Badge>
+          {isIPv6 && <Badge variant="slate">Dual-Stack</Badge>}
           {data.isEU && <Badge variant="slate">🇪🇺 EU</Badge>}
+          {flag && data.country && (
+            <Badge variant="slate">{flag} {data.country}</Badge>
+          )}
         </div>
       </div>
 
@@ -120,9 +161,10 @@ export default function IpDiscovery() {
             Network / ASN
           </CardHeader>
           <CardBody>
-            <DataRow label="ASN" value={data.asn != null ? `AS${data.asn}` : null} mono />
+            <DataRow label="ASN"          value={data.asn != null ? `AS${data.asn}` : null} mono />
             <DataRow label="Organization" value={data.asnOrg} />
-            <DataRow label="Edge PoP" value={data.colo} mono />
+            <DataRow label="Edge PoP"     value={data.colo} mono />
+            <DataRow label="Continent"    value={continent} />
           </CardBody>
         </Card>
 
@@ -135,9 +177,14 @@ export default function IpDiscovery() {
           <CardBody>
             <DataRow label="City / Region"
               value={formatLocation(data.city, data.region) || null} />
-            <DataRow label="Country" value={data.country} mono />
-            <DataRow label="Postal Code" value={data.postalCode} mono />
-            <DataRow label="Timezone" value={data.timezone} mono />
+            <DataRow label="Country"
+              value={data.countryName
+                ? `${flag} ${data.countryName} (${data.country})`
+                : data.country}
+              mono />
+            <DataRow label="Region Code"  value={data.regionCode} mono />
+            <DataRow label="Postal Code"  value={data.postalCode} mono />
+            <DataRow label="Timezone"     value={data.timezone} mono />
             <DataRow label="Coordinates"
               value={formatCoords(data.latitude, data.longitude)} mono />
           </CardBody>
@@ -168,8 +215,69 @@ export default function IpDiscovery() {
               value={data.clientTcpRtt != null ? `${data.clientTcpRtt} ms` : null}
               mono
             />
+            <DataRow label="Encodings"
+              value={data.clientAcceptEncoding
+                ? <span className="text-[0.72rem]">{data.clientAcceptEncoding}</span>
+                : null}
+              mono
+            />
           </CardBody>
         </Card>
+
+        {/* Device */}
+        {browser && (
+          <Card className="animate-fade-up" style={{ '--delay': '0.24s' } as React.CSSProperties}>
+            <CardHeader>
+              <Monitor size={13} strokeWidth={1.75} />
+              Device
+            </CardHeader>
+            <CardBody>
+              <DataRow label="Platform"    value={browser.platform} mono />
+              <DataRow label="Language"    value={browser.language} mono />
+              <DataRow label="CPU Cores"   value={browser.cores != null ? String(browser.cores) : null} mono />
+              <DataRow label="Memory"      value={browser.memory != null ? `${browser.memory} GB` : null} mono />
+              <DataRow label="Screen"      value={browser.screenResolution} mono />
+              <DataRow label="Color Depth" value={`${browser.colorDepth}-bit`} mono />
+              <DataRow label="Touch"
+                value={<Badge variant={browser.touchSupport ? 'green' : 'slate'}>
+                  {browser.touchSupport ? 'Yes' : 'No'}
+                </Badge>}
+              />
+            </CardBody>
+          </Card>
+        )}
+
+        {/* Client / Privacy */}
+        {browser && (
+          <Card className="animate-fade-up" style={{ '--delay': '0.30s' } as React.CSSProperties}>
+            <CardHeader>
+              <Wifi size={13} strokeWidth={1.75} />
+              Client / Privacy
+            </CardHeader>
+            <CardBody>
+              <DataRow label="Timezone"    value={browser.timezone} mono />
+              <DataRow label="Cookies"
+                value={<Badge variant={browser.cookiesEnabled ? 'green' : 'red'}>
+                  {browser.cookiesEnabled ? 'Enabled' : 'Disabled'}
+                </Badge>}
+              />
+              <DataRow label="Do Not Track"
+                value={<Badge variant={browser.doNotTrack === '1' ? 'green' : 'slate'}>
+                  {browser.doNotTrack === '1' ? 'Enabled' : 'Not set'}
+                </Badge>}
+              />
+              {browser.connectionType && (
+                <DataRow label="Network Type"   value={browser.connectionType} mono />
+              )}
+              {browser.connectionDownlink != null && (
+                <DataRow label="Est. Downlink"  value={`${browser.connectionDownlink} Mbps`} mono />
+              )}
+              {browser.connectionRtt != null && (
+                <DataRow label="Network RTT"    value={`${browser.connectionRtt} ms`} mono />
+              )}
+            </CardBody>
+          </Card>
+        )}
 
       </div>
 
