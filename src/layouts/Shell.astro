@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import { getSiteConfig, getEnabledFeatures } from '../lib/config';
+import Sidebar from '../components/Sidebar.astro';
+import Header from '../components/Header.astro';
+
+const site = getSiteConfig();
+const features = getEnabledFeatures();
+
+export interface Props { title?: string }
+const { title = site.site.name } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={site.site.description} />
+  <meta name="theme-color" content="#0a0c0f" />
+  <meta property="og:title" content={site.site.name} />
+  <meta property="og:description" content={site.site.description} />
+  <meta property="og:type" content="website" />
+  <title>{title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  {site.ads.enabled && site.ads.clientId && (
+    <script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${site.ads.clientId}`} crossorigin="anonymous" />
+  )}
+</head>
+<body class="min-h-screen">
+
+  <div class="flex h-screen overflow-hidden">
+    <Sidebar features={features} siteName={site.site.name} version={site.site.version} />
+
+    <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <Header />
+
+      <main id="np-main" class="flex-1 overflow-y-auto bg-grid relative" role="main">
+        <slot />
+      </main>
+    </div>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav id="np-mobile-nav"
+    class="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-[#0f1115] border-t border-white/5 flex"
+    aria-label="Mobile navigation">
+    {features.slice(0, 5).map((f) => (
+      <button
+        class="flex-1 flex flex-col items-center justify-center py-2 gap-0.5
+               text-[10px] font-medium text-white/35 transition-colors
+               hover:text-white/60 data-[active]:text-sky-400 border-0 bg-transparent cursor-pointer"
+        data-feature={f.id}
+        aria-label={f.label}>
+        <span class="size-[18px] np-icon-slot" data-icon={f.icon} aria-hidden="true" />
+        <span>{f.label}</span>
+      </button>
+    ))}
+  </nav>
+
+</body>
+</html>

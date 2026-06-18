@@ -1,0 +1,79 @@
+---
+import type { FeatureFlag } from '../types/config';
+
+export interface Props {
+  features: Array<{ id: string } & FeatureFlag>;
+  siteName: string;
+  version: string;
+}
+const { features, siteName, version } = Astro.props;
+---
+
+<aside
+  id="np-sidebar"
+  class="hidden md:flex flex-col w-[240px] shrink-0 h-screen
+         bg-[#0f1115] border-r border-white/[0.05] sticky top-0 z-20 overflow-y-auto"
+  role="navigation"
+  aria-label="Feature navigation"
+>
+  <!-- Logo -->
+  <a href="/"
+    class="flex items-center gap-2.5 px-4 h-14 border-b border-white/[0.05] shrink-0 no-underline group"
+    aria-label={`${siteName} home`}>
+    <div class="w-7 h-7 rounded-lg flex items-center justify-center font-display font-extrabold
+                text-sm text-white shrink-0 bg-gradient-to-br from-sky-400 to-violet-500
+                shadow-[0_0_12px_rgba(56,189,248,0.3)] group-hover:shadow-[0_0_20px_rgba(56,189,248,0.45)]
+                transition-shadow" aria-hidden="true">N</div>
+    <div>
+      <div class="font-display font-bold text-[0.95rem] text-white/90 leading-none">{siteName}</div>
+      <div class="font-mono text-[0.63rem] text-white/25 mt-0.5">v{version}</div>
+    </div>
+  </a>
+
+  <!-- Nav -->
+  <nav class="flex-1 p-2 overflow-y-auto" aria-label="Tools">
+    <p class="px-2.5 py-2 text-[0.63rem] font-semibold uppercase tracking-[0.1em] text-white/20">Tools</p>
+
+    {features.map((f) => (
+      <button
+        class="np-nav-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] mb-0.5
+               rounded-md text-[0.845rem] text-white/45 font-normal
+               bg-transparent border-0 cursor-pointer text-left
+               transition-all duration-150
+               hover:bg-white/[0.04] hover:text-white/75
+               relative group"
+        data-feature={f.id}>
+        <!-- active indicator -->
+        <span class="absolute left-0 inset-y-[25%] w-[2px] rounded-full bg-sky-400
+                     opacity-0 transition-opacity group-[.active]:opacity-100" aria-hidden="true" />
+        <span class="np-icon-slot size-[14px] shrink-0 flex items-center" data-icon={f.icon} aria-hidden="true" />
+        <span class="flex-1 flex items-center gap-1.5 min-w-0 truncate">
+          {f.label}
+          {f.beta && (
+            <span class="shrink-0 text-[0.57rem] font-bold font-mono px-1 py-px rounded
+                         bg-violet-500/15 text-violet-400 border border-violet-500/25 uppercase tracking-wide">
+              BETA
+            </span>
+          )}
+        </span>
+        <svg class="size-3 text-white/20 opacity-0 group-hover:opacity-100 group-[.active]:opacity-100
+                    transition-opacity shrink-0" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    ))}
+  </nav>
+
+  <!-- Footer -->
+  <div class="p-3 border-t border-white/[0.05] shrink-0">
+    <div id="ad-sidebar-bottom" class="hidden mb-2">
+      <ins class="adsbygoogle block" data-ad-format="auto"
+           data-full-width-responsive="true" data-ad-slot="" />
+    </div>
+    <p class="text-[0.67rem] text-white/18 text-center leading-relaxed">
+      Powered by Cloudflare's global edge<br/>No data stored or logged
+    </p>
+  </div>
+</aside>

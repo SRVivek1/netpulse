@@ -1,0 +1,104 @@
+---
+import Shell from '../layouts/Shell.astro';
+import { getEnabledFeatures, getSiteConfig } from '../lib/config';
+import IpDiscovery from '../components/features/ip/IpDiscovery';
+import ComingSoon from '../components/features/ComingSoon';
+
+const features = getEnabledFeatures();
+const site = getSiteConfig();
+
+const IMPLEMENTED = new Set(['ip_discovery']);
+
+// Embed feature map for client router
+const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.label, icon: f.icon }]));
+---
+
+<Shell title={site.site.name}>
+
+  {features.map((f) => (
+    <section
+      id={`panel-${f.id}`}
+      class="np-panel"
+      data-panel={f.id}
+      style="display:none"
+      aria-label={f.label}
+    >
+      <div class="p-6 md:p-8 pb-16">
+        {IMPLEMENTED.has(f.id)
+          ? f.id === 'ip_discovery' && <IpDiscovery client:load />
+          : <ComingSoon label={f.label} client:load />
+        }
+      </div>
+    </section>
+  ))}
+
+</Shell>
+
+<script define:vars={{ defaultFeature: site.site.defaultFeature, featureMap }}>
+  // ── Icon paths (inline so the router has zero extra fetches) ─────────
+  const ICONS = {
+    globe:          '<path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+    'map-pin':      '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+    zap:            '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+    search:         '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    activity:       '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+    shield:         '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    code:           '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+    'share-2':      '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>',
+    lock:           '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    mail:           '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+    'git-branch':   '<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+  };
+
+  function makeIcon(name) {
+    const paths = ICONS[name] ?? '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+      style="width:100%;height:100%">${paths}</svg>`;
+  }
+
+  function injectIcons() {
+    document.querySelectorAll('.np-icon-slot[data-icon]').forEach((el) => {
+      el.innerHTML = makeIcon(el.dataset.icon);
+    });
+  }
+
+  function navigateTo(featureId) {
+    document.querySelectorAll('[data-feature]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.feature === featureId);
+    });
+
+    document.querySelectorAll('.np-panel').forEach((panel) => {
+      panel.style.display = panel.dataset.panel === featureId ? 'block' : 'none';
+    });
+
+    const meta = featureMap[featureId];
+    const titleEl = document.getElementById('np-header-title');
+    if (titleEl && meta) {
+      titleEl.innerHTML = `
+        <span style="width:15px;height:15px;display:inline-flex;color:rgb(56 189 248)">${makeIcon(meta.icon)}</span>
+        <span>${meta.label}</span>
+      `;
+    }
+
+    history.replaceState(null, '', '#' + featureId);
+  }
+
+  function init() {
+    injectIcons();
+
+    document.querySelectorAll('[data-feature]').forEach((btn) => {
+      btn.addEventListener('click', () => navigateTo(btn.dataset.feature));
+    });
+
+    const hash = location.hash.slice(1);
+    const panels = [...document.querySelectorAll('.np-panel')].map((p) => p.dataset.panel);
+    navigateTo(panels.includes(hash) ? hash : defaultFeature);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>

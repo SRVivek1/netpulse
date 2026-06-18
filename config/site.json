@@ -1,0 +1,72 @@
+{
+  "site": {
+    "name": "NetPulse",
+    "tagline": "Network Intelligence at the Edge",
+    "description": "Real-time network diagnostics, IP intelligence, and connectivity analysis powered by Cloudflare's global edge network.",
+    "version": "1.0.0",
+    "defaultFeature": "ip_discovery"
+  },
+  "ads": {
+    "enabled": false,
+    "provider": "google",
+    "clientId": "",
+    "slots": {
+      "sidebar_bottom": {
+        "enabled": false,
+        "slotId": "",
+        "format": "auto",
+        "responsive": true
+      },
+      "content_banner": {
+        "enabled": false,
+        "slotId": "",
+        "format": "horizontal",
+        "responsive": true
+      }
+    }
+  },
+  "analytics": {
+    "enabled": false,
+    "provider": "cloudflare",
+    "token": ""
+  },
+  "maps": {
+    "tileProvider": "stadia",
+    "providers": {
+      "stadia": {
+        "url": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+        "attribution": "&copy; <a href='https://stadiamaps.com/'>Stadia Maps</a>, &copy; <a href='https://openmaptiles.org/'>OpenMapTiles</a> &copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a>",
+        "maxZoom": 20,
+        "apiKey": ""
+      },
+      "carto": {
+        "url": "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        "attribution": "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors &copy; <a href='https://carto.com/attributions'>CARTO</a>",
+        "maxZoom": 19,
+        "subdomains": "abcd"
+      }
+    }
+  },
+  "speedTest": {
+    "downloadStreams": 4,
+    "downloadSizeMB": 25,
+    "uploadSizeMB": 5,
+    "pingCount": 8,
+    "pingWarmupCount": 2
+  },
+  "doh": {
+    "primary": "https://cloudflare-dns.com/dns-query",
+    "fallback": "https://dns.google/dns-query"
+  },
+  "serviceStatus": {
+    "services": [
+      { "name": "Cloudflare", "url": "https://www.cloudflare.com", "icon": "☁️" },
+      { "name": "Google", "url": "https://www.google.com", "icon": "🔍" },
+      { "name": "AWS", "url": "https://aws.amazon.com", "icon": "🟠" },
+      { "name": "GitHub", "url": "https://github.com", "icon": "🐙" },
+      { "name": "YouTube", "url": "https://www.youtube.com", "icon": "▶️" },
+      { "name": "Fastly", "url": "https://www.fastly.com", "icon": "⚡" }
+    ],
+    "timeoutMs": 5000
+  }
+}

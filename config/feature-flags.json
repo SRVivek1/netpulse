@@ -1,0 +1,82 @@
+{
+  "_comment": "Set 'enabled' to false to hide a feature from the UI entirely. 'beta' shows a badge. 'order' controls sidebar position.",
+  "features": {
+    "ip_discovery": {
+      "enabled": true,
+      "beta": false,
+      "order": 1,
+      "label": "IP & ASN",
+      "icon": "globe"
+    },
+    "geolocation_map": {
+      "enabled": true,
+      "beta": false,
+      "order": 2,
+      "label": "Geolocation",
+      "icon": "map-pin"
+    },
+    "speed_test": {
+      "enabled": true,
+      "beta": false,
+      "order": 3,
+      "label": "Speed Test",
+      "icon": "zap"
+    },
+    "dns_resolver": {
+      "enabled": true,
+      "beta": false,
+      "order": 4,
+      "label": "DNS Lookup",
+      "icon": "search"
+    },
+    "service_status": {
+      "enabled": true,
+      "beta": false,
+      "order": 5,
+      "label": "Service Status",
+      "icon": "activity"
+    },
+    "webrtc_leak": {
+      "enabled": true,
+      "beta": true,
+      "order": 6,
+      "label": "WebRTC Leak",
+      "icon": "shield"
+    },
+    "http_headers": {
+      "enabled": true,
+      "beta": true,
+      "order": 7,
+      "label": "HTTP Headers",
+      "icon": "code"
+    },
+    "dns_propagation": {
+      "enabled": false,
+      "beta": true,
+      "order": 8,
+      "label": "DNS Propagation",
+      "icon": "share-2"
+    },
+    "ssl_cert": {
+      "enabled": false,
+      "beta": true,
+      "order": 9,
+      "label": "SSL / TLS",
+      "icon": "lock"
+    },
+    "email_deliverability": {
+      "enabled": false,
+      "beta": true,
+      "order": 10,
+      "label": "Email / MX",
+      "icon": "mail"
+    },
+    "bgp_route": {
+      "enabled": false,
+      "beta": true,
+      "order": 11,
+      "label": "BGP Route",
+      "icon": "git-branch"
+    }
+  }
+}
