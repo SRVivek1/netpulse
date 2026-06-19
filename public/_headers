@@ -7,3 +7,7 @@
 /api/*
   Cache-Control: no-store
   Access-Control-Allow-Origin: *
+
+/speed/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Content-Type: application/octet-stream

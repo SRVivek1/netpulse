@@ -27,3 +27,6 @@ pnpm-debug.log*
 
 # Cloudflare local cache
 .wrangler/
+
+# Speed test binaries (generated at build time — see scripts/generate-speed-chunks)
+public/speed/*.bin

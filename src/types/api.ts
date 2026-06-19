@@ -1,3 +1,16 @@
+export interface ProxyDetection {
+  detected: boolean;
+  signals: string[];
+  chain: string[];
+  headers: Record<string, string>;
+}
+
+export interface ConnectionRisk {
+  level: 'low' | 'medium' | 'high';
+  label: string;
+  reasons: string[];
+}
+
 export interface IpData {
   ip: string;
   ipVersion: 'IPv4' | 'IPv6' | 'unknown';
@@ -22,5 +35,8 @@ export interface IpData {
   clientAcceptEncoding: string | null;
   isEU: boolean;
   edgeDataAvailable: boolean;
+  headers: Record<string, string>;
+  proxy: ProxyDetection;
+  connectionRisk: ConnectionRisk;
   servedAt: string;
 }

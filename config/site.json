@@ -49,7 +49,25 @@
   },
   "speedTest": {
     "downloadStreams": 4,
-    "downloadSizeMB": 25,
+    "defaultPreset": "standard",
+    "presets": {
+      "standard": {
+        "label": "Standard",
+        "chunkSizeMB": 5,
+        "description": "Up to ~100 Mbps"
+      },
+      "fast": {
+        "label": "Fast",
+        "chunkSizeMB": 12,
+        "description": "100–500 Mbps"
+      },
+      "gigabit": {
+        "label": "Gigabit",
+        "chunkSizeMB": 25,
+        "description": "500 Mbps–1 Gbps+"
+      }
+    },
+    "assetsPath": "/speed",
     "uploadSizeMB": 5,
     "pingCount": 8,
     "pingWarmupCount": 2

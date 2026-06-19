@@ -255,4 +255,4 @@ NetPulse is stateless and lightweight — it comfortably runs within the free ti
 | `request.cf` returns `undefined` | The `cf` object is only populated on real Cloudflare edge requests, not during `wrangler dev` local simulation |
 | 404 on all routes | Verify the build output directory is set to `dist` in Pages settings |
 | Assets not loading | Confirm `public/_headers` is in the repo root and not gitignored |
-| Deploy rejected — size limit | Run `npm run build` and check `du -sh dist/` — the free tier allows up to 25 MB of assets |
+| Deploy rejected — size limit | Per-file max is **25 MiB** (not total deploy). Gigabit preset uses 4×25 MiB chunks (~100 MB total). Generate via build script; keep `*.bin` gitignored. |

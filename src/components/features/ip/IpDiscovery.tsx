@@ -1,20 +1,24 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Globe, MapPin, Zap, Search, Shield, RefreshCw,
   ChevronDown, ArrowRight, AlertTriangle, Info,
-  Lock, Wifi, Monitor,
+  Lock, Wifi, Server,
 } from 'lucide-react';
-import type { IpData } from '../../../types/api';
+import type { ConnectionRisk, IpData } from '../../../types/api';
 import { CopyButton } from '../../ui/CopyButton';
 import { Badge } from '../../ui/Badge';
 import {
   formatCoords, formatLocation, countryFlag, continentName, fetchWithTimeout,
 } from '../../../lib/utils';
-import { isLikelyDatacenter } from '../../../lib/ip';
+import { isLikelyDatacenter, withTimezoneMismatch } from '../../../lib/ip';
+import { collectBrowserFingerprint, type BrowserFingerprint } from '../../../lib/browser';
 import { navigateToFeature } from '../../../lib/navigation';
+import { ConnectionRiskBadge } from './ConnectionRiskBadge';
+import { IpNeighbourhood } from './IpNeighbourhood';
+import { RequestHeadersPanel } from './RequestHeadersPanel';
+import { BrowserFingerprintPanel } from './BrowserFingerprintPanel';
 
-// ── Skeleton ──────────────────────────────────────────────────────────────
 function IpSkeleton() {
   return (
     <div className="max-w-3xl mx-auto space-y-5">
@@ -36,7 +40,6 @@ function IpSkeleton() {
   );
 }
 
-// ── Error ─────────────────────────────────────────────────────────────────
 function IpError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="max-w-md mx-auto flex flex-col items-center justify-center py-24 gap-4 text-center">
@@ -47,74 +50,34 @@ function IpError({ message, onRetry }: { message: string; onRetry: () => void })
         <p className="text-white/90 font-display font-semibold text-lg">Couldn&apos;t load your IP</p>
         <p className="font-mono text-[0.75rem] text-white/35 mt-1">{message}</p>
       </div>
-      <button onClick={onRetry} className="cta-primary">
-        Try again
-      </button>
+      <button onClick={onRetry} className="cta-primary">Try again</button>
     </div>
   );
 }
 
-// ── CTA cards ─────────────────────────────────────────────────────────────
 const TOOLS = [
-  {
-    id: 'geolocation_map',
-    icon: MapPin,
-    label: 'See on map',
-    desc: 'Pin your approximate location',
-    accent: 'from-violet-500/20 to-violet-500/5',
-    iconColor: 'text-violet-400',
-  },
-  {
-    id: 'speed_test',
-    icon: Zap,
-    label: 'Test speed',
-    desc: 'Measure download & upload',
-    accent: 'from-amber-500/20 to-amber-500/5',
-    iconColor: 'text-amber-400',
-  },
-  {
-    id: 'dns_resolver',
-    icon: Search,
-    label: 'Lookup DNS',
-    desc: 'Query A, MX, TXT records',
-    accent: 'from-sky-500/20 to-sky-500/5',
-    iconColor: 'text-sky-400',
-  },
-  {
-    id: 'webrtc_leak',
-    icon: Shield,
-    label: 'Check VPN leak',
-    desc: 'Detect WebRTC IP exposure',
-    accent: 'from-emerald-500/20 to-emerald-500/5',
-    iconColor: 'text-emerald-400',
-  },
+  { id: 'geolocation_map', icon: MapPin, label: 'See on map', desc: 'Pin your approximate location', accent: 'from-violet-500/20 to-violet-500/5', iconColor: 'text-violet-400' },
+  { id: 'speed_test', icon: Zap, label: 'Test speed', desc: 'Measure download & upload', accent: 'from-amber-500/20 to-amber-500/5', iconColor: 'text-amber-400' },
+  { id: 'dns_resolver', icon: Search, label: 'Lookup DNS', desc: 'Query A, MX, TXT records', accent: 'from-sky-500/20 to-sky-500/5', iconColor: 'text-sky-400' },
+  { id: 'webrtc_leak', icon: Shield, label: 'Check VPN leak', desc: 'Detect WebRTC IP exposure', accent: 'from-emerald-500/20 to-emerald-500/5', iconColor: 'text-emerald-400' },
 ] as const;
 
 function ToolCta({ tool }: { tool: typeof TOOLS[number] }) {
   const Icon = tool.icon;
   return (
-    <button
-      onClick={() => navigateToFeature(tool.id)}
-      className={`cta-tool bg-gradient-to-br ${tool.accent} group`}
-    >
+    <button onClick={() => navigateToFeature(tool.id)} className={`cta-tool bg-gradient-to-br ${tool.accent} group`}>
       <div className={`size-9 rounded-xl bg-white/[0.06] flex items-center justify-center ${tool.iconColor}`}>
         <Icon size={18} strokeWidth={1.75} />
       </div>
       <div className="flex-1 text-left min-w-0">
-        <p className="text-[0.88rem] font-semibold text-white/90 group-hover:text-white transition-colors">
-          {tool.label}
-        </p>
+        <p className="text-[0.88rem] font-semibold text-white/90 group-hover:text-white transition-colors">{tool.label}</p>
         <p className="text-[0.72rem] text-white/35 truncate">{tool.desc}</p>
       </div>
-      <ArrowRight
-        size={15}
-        className="text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0"
-      />
+      <ArrowRight size={15} className="text-white/20 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0" />
     </button>
   );
 }
 
-// ── Quick stat pill ───────────────────────────────────────────────────────
 function StatPill({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="stat-pill">
@@ -122,49 +85,6 @@ function StatPill({ label, value }: { label: string; value: React.ReactNode }) {
       <span className="text-[0.82rem] text-white/85 font-medium">{value}</span>
     </div>
   );
-}
-
-// ── Browser info (for advanced section) ─────────────────────────────────────
-interface BrowserInfo {
-  language: string;
-  platform: string;
-  cores: number | null;
-  memory: number | null;
-  connectionType: string | null;
-  connectionRtt: number | null;
-  connectionDownlink: number | null;
-  cookiesEnabled: boolean;
-  doNotTrack: string | null;
-  screenResolution: string;
-  colorDepth: number;
-  touchSupport: boolean;
-  timezone: string;
-}
-
-function getBrowserInfo(): BrowserInfo {
-  const nav = navigator as Navigator & {
-    connection?: { effectiveType?: string; rtt?: number; downlink?: number };
-    mozConnection?: { effectiveType?: string; rtt?: number; downlink?: number };
-    webkitConnection?: { effectiveType?: string; rtt?: number; downlink?: number };
-    deviceMemory?: number;
-    userAgentData?: { platform?: string };
-  };
-  const conn = nav.connection ?? nav.mozConnection ?? nav.webkitConnection ?? null;
-  return {
-    language: navigator.language || '—',
-    platform: nav.userAgentData?.platform ?? navigator.platform ?? '—',
-    cores: navigator.hardwareConcurrency ?? null,
-    memory: nav.deviceMemory ?? null,
-    connectionType: conn?.effectiveType ?? null,
-    connectionRtt: conn?.rtt ?? null,
-    connectionDownlink: conn?.downlink ?? null,
-    cookiesEnabled: navigator.cookieEnabled,
-    doNotTrack: navigator.doNotTrack,
-    screenResolution: `${screen.width} × ${screen.height}`,
-    colorDepth: screen.colorDepth,
-    touchSupport: navigator.maxTouchPoints > 0,
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  };
 }
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -195,13 +115,12 @@ function connectionLabel(v: IpData['ipVersion']) {
   return 'Unknown protocol';
 }
 
-// ── Main component ────────────────────────────────────────────────────────
 export default function IpDiscovery() {
   const [data, setData] = useState<IpData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [browser, setBrowser] = useState<BrowserInfo | null>(null);
+  const [fingerprint, setFingerprint] = useState<BrowserFingerprint | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const load = async (isRefresh = false) => {
@@ -211,8 +130,9 @@ export default function IpDiscovery() {
     try {
       const res = await fetchWithTimeout('/api/ip', {}, 10_000);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setData(await res.json());
-      setBrowser(getBrowserInfo());
+      const json: IpData = await res.json();
+      setData(json);
+      setFingerprint(await collectBrowserFingerprint());
     } catch (e) {
       const msg = e instanceof DOMException && e.name === 'AbortError'
         ? 'Request timed out — try again'
@@ -226,6 +146,12 @@ export default function IpDiscovery() {
 
   useEffect(() => { load(); }, []);
 
+  const connectionRisk: ConnectionRisk | null = useMemo(() => {
+    if (!data) return null;
+    if (!fingerprint) return data.connectionRisk;
+    return withTimezoneMismatch(data.connectionRisk, data.timezone, fingerprint.timezone);
+  }, [data, fingerprint]);
+
   if (loading) return <IpSkeleton />;
   if (error || !data) return <IpError message={error ?? 'No data'} onRetry={() => load()} />;
 
@@ -234,11 +160,11 @@ export default function IpDiscovery() {
   const showDatacenterHint = isLikelyDatacenter(data.asnOrg);
   const ispDisplay = data.asnOrg ?? 'Unknown ISP';
   const asnDisplay = data.asn != null ? `AS${data.asn}` : '—';
+  const hasGeo = data.latitude != null && data.longitude != null;
 
   return (
     <div className="max-w-3xl mx-auto pb-8">
 
-      {/* Dev / stub banner */}
       {!data.edgeDataAvailable && (
         <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 animate-fade-up">
           <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
@@ -248,14 +174,12 @@ export default function IpDiscovery() {
         </div>
       )}
 
-      {/* ── Hero ── */}
-      <div className="ip-hero-glow rounded-2xl p-6 sm:p-8 mb-5 animate-fade-up" style={{ '--delay': '0s' } as React.CSSProperties}>
+      {/* Hero */}
+      <div className="ip-hero-glow rounded-2xl p-6 sm:p-8 mb-5 animate-fade-up">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <Globe size={14} className="text-sky-400/70" />
-            <p className="text-[0.72rem] font-medium uppercase tracking-[0.14em] text-white/35">
-              Your public IP
-            </p>
+            <p className="text-[0.72rem] font-medium uppercase tracking-[0.14em] text-white/35">Your public IP</p>
           </div>
           <button
             onClick={() => load(true)}
@@ -280,28 +204,17 @@ export default function IpDiscovery() {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
-          <Badge variant={connectionBadgeVariant(data.ipVersion)}>
-            {connectionLabel(data.ipVersion)}
-          </Badge>
-          {flag && data.country && (
-            <Badge variant="slate">{flag} {data.countryName ?? data.country}</Badge>
-          )}
-          {data.httpProtocol && (
-            <Badge variant={protoBadgeVariant(data.httpProtocol)}>{data.httpProtocol}</Badge>
-          )}
+          <Badge variant={connectionBadgeVariant(data.ipVersion)}>{connectionLabel(data.ipVersion)}</Badge>
+          {flag && data.country && <Badge variant="slate">{flag} {data.countryName ?? data.country}</Badge>}
+          {data.httpProtocol && <Badge variant={protoBadgeVariant(data.httpProtocol)}>{data.httpProtocol}</Badge>}
           {data.isEU && <Badge variant="slate">🇪🇺 EU</Badge>}
+          {data.proxy.detected && <Badge variant="yellow">Proxy headers</Badge>}
         </div>
 
-        {/* ISP / ASN monospace block */}
-        <div className="isp-block rounded-xl p-4 sm:p-5">
+        <div className="isp-block rounded-xl p-4 sm:p-5 mb-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-white/25">
-              Network identity
-            </span>
-            <CopyButton
-              text={`${ispDisplay} · ${asnDisplay}`}
-              className="size-[26px] !rounded-md"
-            />
+            <span className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-white/25">Network identity</span>
+            <CopyButton text={`${ispDisplay} · ${asnDisplay}`} className="size-[26px] !rounded-md" />
           </div>
           <div className="space-y-2.5 font-mono">
             <div>
@@ -316,47 +229,65 @@ export default function IpDiscovery() {
           </div>
         </div>
 
+        {connectionRisk && <ConnectionRiskBadge risk={connectionRisk} />}
+
         {showDatacenterHint && (
           <p className="mt-3 text-[0.72rem] text-white/30 leading-relaxed flex items-start gap-1.5">
             <Info size={12} className="shrink-0 mt-0.5 text-white/25" />
-            This network looks like a VPN, proxy, or datacenter — ISP may not reflect your home provider.
+            ISP name may reflect a VPN, proxy, or datacenter rather than your home provider.
           </p>
         )}
       </div>
 
-      {/* ── Quick stats ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6 animate-fade-up" style={{ '--delay': '0.06s' } as React.CSSProperties}>
-        <StatPill label="Location" value={location !== 'Location unavailable' ? location : '—'} />
-        <StatPill label="TLS" value={data.tlsVersion?.replace('TLSv', 'TLS ') ?? '—'} />
-        <StatPill label="Edge PoP" value={data.colo ?? '—'} />
-        <StatPill
-          label="Latency"
-          value={data.clientTcpRtt != null ? `${data.clientTcpRtt} ms` : '—'}
-        />
+      {/* Geo summary */}
+      <div className="mb-5 animate-fade-up" style={{ '--delay': '0.04s' } as React.CSSProperties}>
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+          <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-white/25 mb-2">
+            Approximate location
+          </p>
+          <p className="text-[0.88rem] text-white/85 mb-1">
+            {location !== 'Location unavailable' ? location : 'Location unavailable'}
+            {data.postalCode ? ` · ${data.postalCode}` : ''}
+          </p>
+          <p className="text-[0.72rem] text-white/30">
+            {hasGeo ? formatCoords(data.latitude, data.longitude) : 'Coordinates unavailable'}
+            {data.timezone ? ` · ${data.timezone}` : ''}
+          </p>
+          <p className="text-[0.68rem] text-white/20 mt-2">
+            City-level accuracy based on IP — may differ from your exact address.
+          </p>
+        </div>
       </div>
 
-      {/* ── Tool CTAs ── */}
+      <div className="mb-5 animate-fade-up" style={{ '--delay': '0.05s' } as React.CSSProperties}>
+        <IpNeighbourhood ip={data.ip} />
+      </div>
+
+      {/* Quick stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6 animate-fade-up" style={{ '--delay': '0.06s' } as React.CSSProperties}>
+        <StatPill label="TLS" value={data.tlsVersion?.replace('TLSv', 'TLS ') ?? '—'} />
+        <StatPill label="Edge PoP" value={data.colo ?? '—'} />
+        <StatPill label="Latency" value={data.clientTcpRtt != null ? `${data.clientTcpRtt} ms` : '—'} />
+        <StatPill label="Continent" value={continentName(data.continent) ?? '—'} />
+      </div>
+
+      {/* CTAs */}
       <div className="mb-6 animate-fade-up" style={{ '--delay': '0.12s' } as React.CSSProperties}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-semibold text-[0.95rem] text-white/80">
-            Explore your connection
-          </h2>
+          <h2 className="font-display font-semibold text-[0.95rem] text-white/80">Explore your connection</h2>
           <button
             onClick={() => navigateToFeature('service_status')}
-            className="text-[0.72rem] text-sky-400/70 hover:text-sky-400 transition-colors
-                       border-0 bg-transparent cursor-pointer flex items-center gap-1"
+            className="text-[0.72rem] text-sky-400/70 hover:text-sky-400 transition-colors border-0 bg-transparent cursor-pointer flex items-center gap-1"
           >
             Service status <ArrowRight size={12} />
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {TOOLS.map((tool) => (
-            <ToolCta key={tool.id} tool={tool} />
-          ))}
+          {TOOLS.map((tool) => <ToolCta key={tool.id} tool={tool} />)}
         </div>
       </div>
 
-      {/* ── Advanced details (collapsible) ── */}
+      {/* Advanced */}
       <div className="animate-fade-up" style={{ '--delay': '0.18s' } as React.CSSProperties}>
         <button
           onClick={() => setAdvancedOpen((o) => !o)}
@@ -366,12 +297,9 @@ export default function IpDiscovery() {
         >
           <span className="text-[0.82rem] font-medium text-white/50 flex items-center gap-2">
             <Lock size={13} className="text-white/25" />
-            Advanced connection details
+            Advanced details
           </span>
-          <ChevronDown
-            size={16}
-            className={`text-white/30 transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
-          />
+          <ChevronDown size={16} className={`text-white/30 transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {advancedOpen && (
@@ -383,31 +311,29 @@ export default function IpDiscovery() {
             </div>
             <div className="px-4 py-1">
               <DetailRow label="TLS cipher" value={data.tlsCipher} />
-              <DetailRow label="Continent" value={continentName(data.continent)} />
+              <DetailRow label="HTTP priority" value={data.requestPriority} />
               <DetailRow label="Region code" value={data.regionCode} />
-              <DetailRow label="Postal code" value={data.postalCode} />
-              <DetailRow label="Timezone" value={data.timezone} />
-              <DetailRow label="Coordinates" value={formatCoords(data.latitude, data.longitude)} />
               <DetailRow label="Encodings" value={data.clientAcceptEncoding} />
+              {data.proxy.chain.length > 0 && (
+                <DetailRow label="IP chain" value={data.proxy.chain.join(' → ')} />
+              )}
             </div>
 
-            {browser && (
+            <div className="px-4 py-3 border-t border-b border-white/[0.05]">
+              <p className="text-[0.68rem] uppercase tracking-wider text-white/25 font-semibold flex items-center gap-1.5">
+                <Server size={12} /> Request headers
+              </p>
+            </div>
+            <RequestHeadersPanel headers={data.headers} />
+
+            {fingerprint && (
               <>
                 <div className="px-4 py-3 border-t border-b border-white/[0.05]">
-                  <p className="text-[0.68rem] uppercase tracking-wider text-white/25 font-semibold flex items-center gap-1.5">
-                    <Monitor size={12} /> Device &amp; browser
+                  <p className="text-[0.68rem] uppercase tracking-wider text-white/25 font-semibold">
+                    Browser fingerprint
                   </p>
                 </div>
-                <div className="px-4 py-1 pb-3">
-                  <DetailRow label="Platform" value={browser.platform} />
-                  <DetailRow label="Language" value={browser.language} />
-                  <DetailRow label="CPU cores" value={browser.cores != null ? String(browser.cores) : null} />
-                  <DetailRow label="Memory" value={browser.memory != null ? `${browser.memory} GB` : null} />
-                  <DetailRow label="Screen" value={browser.screenResolution} />
-                  <DetailRow label="Network type" value={browser.connectionType} />
-                  <DetailRow label="Est. downlink" value={browser.connectionDownlink != null ? `${browser.connectionDownlink} Mbps` : null} />
-                  <DetailRow label="Browser timezone" value={browser.timezone} />
-                </div>
+                <BrowserFingerprintPanel fingerprint={fingerprint} ipTimezone={data.timezone} />
               </>
             )}
           </div>

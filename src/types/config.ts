@@ -48,7 +48,13 @@ export interface SiteConfig {
   };
   speedTest: {
     downloadStreams: number;
-    downloadSizeMB: number;
+    defaultPreset: 'standard' | 'fast' | 'gigabit';
+    presets: Record<'standard' | 'fast' | 'gigabit', {
+      label: string;
+      chunkSizeMB: number;
+      description: string;
+    }>;
+    assetsPath: string;
     uploadSizeMB: number;
     pingCount: number;
     pingWarmupCount: number;

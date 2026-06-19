@@ -4,6 +4,9 @@ import {
   normalizeAsOrg,
   parseCoord,
   isEdgeDataUnavailable,
+  collectSafeHeaders,
+  detectProxyFromHeaders,
+  assessConnectionRisk,
 } from '../../lib/ip';
 
 export const prerender = false;
@@ -19,6 +22,9 @@ export const GET: APIRoute = ({ request }) => {
   const asn = cf.asn ?? null;
   const asnOrg = normalizeAsOrg(cf.asOrganization);
   const edgeDataAvailable = !isEdgeDataUnavailable(ip, asn, cf.colo);
+  const headers = collectSafeHeaders(request);
+  const proxy = detectProxyFromHeaders(request, ip);
+  const connectionRisk = assessConnectionRisk(proxy, asnOrg);
 
   const payload = {
     ip,
@@ -44,6 +50,9 @@ export const GET: APIRoute = ({ request }) => {
     clientAcceptEncoding: cf.clientAcceptEncoding ?? null,
     isEU:             cf.isEUCountry === '1',
     edgeDataAvailable,
+    headers,
+    proxy,
+    connectionRisk,
     servedAt:         new Date().toISOString(),
   };
 
