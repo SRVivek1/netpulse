@@ -1,4 +1,10 @@
 import type { APIRoute } from 'astro';
+import {
+  detectIpVersion,
+  normalizeAsOrg,
+  parseCoord,
+  isEdgeDataUnavailable,
+} from '../../lib/ip';
 
 export const prerender = false;
 
@@ -10,14 +16,15 @@ export const GET: APIRoute = ({ request }) => {
     request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ??
     'unknown';
 
-  const lat = cf.latitude != null ? parseFloat(cf.latitude) : null;
-  const lon = cf.longitude != null ? parseFloat(cf.longitude) : null;
+  const asn = cf.asn ?? null;
+  const asnOrg = normalizeAsOrg(cf.asOrganization);
+  const edgeDataAvailable = !isEdgeDataUnavailable(ip, asn, cf.colo);
 
   const payload = {
     ip,
-    ipVersion: ip.includes(':') ? 'IPv6' : 'IPv4',
-    asn:              cf.asn               ?? null,
-    asnOrg:           cf.asOrganization    ?? null,
+    ipVersion: detectIpVersion(ip),
+    asn,
+    asnOrg,
     colo:             cf.colo              ?? null,
     city:             cf.city              ?? null,
     region:           cf.region            ?? null,
@@ -27,8 +34,8 @@ export const GET: APIRoute = ({ request }) => {
     postalCode:       cf.postalCode        ?? null,
     continent:        cf.continent         ?? null,
     timezone:         cf.timezone          ?? null,
-    latitude:         lat,
-    longitude:        lon,
+    latitude:         parseCoord(cf.latitude),
+    longitude:        parseCoord(cf.longitude),
     httpProtocol:     cf.httpProtocol      ?? null,
     tlsVersion:       cf.tlsVersion        ?? null,
     tlsCipher:        cf.tlsCipher         ?? null,
@@ -36,6 +43,7 @@ export const GET: APIRoute = ({ request }) => {
     requestPriority:  cf.requestPriority   ?? null,
     clientAcceptEncoding: cf.clientAcceptEncoding ?? null,
     isEU:             cf.isEUCountry === '1',
+    edgeDataAvailable,
     servedAt:         new Date().toISOString(),
   };
 

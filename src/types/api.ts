@@ -1,6 +1,6 @@
 export interface IpData {
   ip: string;
-  ipVersion: 'IPv4' | 'IPv6';
+  ipVersion: 'IPv4' | 'IPv6' | 'unknown';
   asn: number | null;
   asnOrg: string | null;
   colo: string | null;
@@ -21,5 +21,6 @@ export interface IpData {
   requestPriority: string | null;
   clientAcceptEncoding: string | null;
   isEU: boolean;
+  edgeDataAvailable: boolean;
   servedAt: string;
 }
