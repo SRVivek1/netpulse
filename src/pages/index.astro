@@ -2,12 +2,13 @@
 import Shell from '../layouts/Shell.astro';
 import { getEnabledFeatures, getSiteConfig } from '../lib/config';
 import IpDiscovery from '../components/features/ip/IpDiscovery';
+import GeolocationMap from '../components/features/geolocation/GeolocationMap';
 import ComingSoon from '../components/features/ComingSoon';
 
 const features = getEnabledFeatures();
 const site = getSiteConfig();
 
-const IMPLEMENTED = new Set(['ip_discovery']);
+const IMPLEMENTED = new Set(['ip_discovery', 'geolocation_map']);
 
 // Embed feature map for client router
 const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.label, icon: f.icon }]));
@@ -25,7 +26,9 @@ const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.labe
     >
       <div class="p-6 md:p-8 pb-16">
         {IMPLEMENTED.has(f.id)
-          ? f.id === 'ip_discovery' && <IpDiscovery client:load />
+          ? f.id === 'ip_discovery' ? <IpDiscovery client:load />
+          : f.id === 'geolocation_map' ? <GeolocationMap client:load />
+          : null
           : <ComingSoon label={f.label} client:load />
         }
       </div>
