@@ -47,8 +47,8 @@ function GeoError({ message, onRetry }: { message: string; onRetry: () => void }
         <AlertTriangle className="text-red-400" size={24} strokeWidth={1.5} />
       </div>
       <div>
-        <p className="text-white/90 font-display font-semibold text-lg">Couldn&apos;t load location</p>
-        <p className="font-mono text-[0.75rem] text-white/35 mt-1">{message}</p>
+        <p className="text-np font-display font-semibold text-lg">Couldn&apos;t load location</p>
+        <p className="font-mono text-[0.75rem] text-np-muted mt-1">{message}</p>
       </div>
       <button onClick={onRetry} className="cta-primary">Try again</button>
     </div>
@@ -57,7 +57,7 @@ function GeoError({ message, onRetry }: { message: string; onRetry: () => void }
 
 function LegendItem({ colorClass, label }: { colorClass: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-[0.72rem] text-white/45">
+    <span className="inline-flex items-center gap-1.5 text-[0.72rem] text-np-muted">
       <span className={`size-2.5 rounded-full border border-white/70 ${colorClass}`} />
       {label}
     </span>
@@ -379,26 +379,26 @@ export default function GeolocationMap() {
       )}
 
       {/* Location header */}
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-4 mb-4 animate-fade-up">
+      <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-4 mb-4 animate-fade-up">
         <div className="flex items-center gap-2 mb-2">
           <MapPin size={14} className="text-violet-400/80" />
-          <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-white/25">
+          <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint">
             Approximate location
           </p>
         </div>
-        <p className="text-[1rem] text-white/90 mb-1">
+        <p className="text-[1rem] text-np mb-1">
           {flag && <span className="mr-1.5">{flag}</span>}
           {location !== 'Location unavailable' ? location : 'Location unavailable'}
           {ipData.postalCode ? ` · ${ipData.postalCode}` : ''}
         </p>
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-mono text-[0.78rem] text-white/40">
+          <p className="font-mono text-[0.78rem] text-np-muted">
             {hasGeo ? coordText : 'Coordinates unavailable'}
             {ipData.timezone ? ` · ${ipData.timezone}` : ''}
           </p>
           {hasGeo && <CopyButton text={coordText} />}
         </div>
-        <p className="text-[0.68rem] text-white/20 mt-2 leading-relaxed">
+        <p className="text-[0.68rem] text-np-faint mt-2 leading-relaxed">
           Approximate location based on IP — city-level accuracy, often off by 50–200 km.
         </p>
       </div>
@@ -408,12 +408,12 @@ export default function GeolocationMap() {
         <div className="mb-4 animate-fade-up relative" style={{ '--delay': '0.04s' } as React.CSSProperties}>
           <div
             ref={mapContainerRef}
-            className="geo-map-container h-[420px] border border-white/[0.06]"
+            className="geo-map-container h-[420px] border border-np"
             aria-label="Geolocation map"
           />
           {!mapReady && panelActive && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#0f1118]/80 rounded-xl pointer-events-none">
-              <RefreshCw size={20} className="text-white/30 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center bg-[var(--np-map-bg)]/80 rounded-xl pointer-events-none">
+              <RefreshCw size={20} className="text-np-faint animate-spin" />
             </div>
           )}
           <div className="flex flex-wrap gap-4 mt-3 px-1">
@@ -423,31 +423,31 @@ export default function GeolocationMap() {
           </div>
         </div>
       ) : (
-        <div className="mb-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-8 text-center animate-fade-up">
-          <Globe2 size={28} className="mx-auto text-white/20 mb-3" />
-          <p className="text-[0.88rem] text-white/70 mb-1">
+        <div className="mb-4 rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-8 text-center animate-fade-up">
+          <Globe2 size={28} className="mx-auto text-np-faint mb-3" />
+          <p className="text-[0.88rem] text-np-muted mb-1">
             {hasGeo ? 'Map tiles unavailable' : 'Location unavailable on map'}
           </p>
-          <p className="text-[0.72rem] text-white/35 max-w-sm mx-auto">
+          <p className="text-[0.72rem] text-np-muted max-w-sm mx-auto">
             {hasGeo
               ? 'Showing coordinates as text. Tile providers may be rate-limited or blocked.'
               : 'IP geolocation coordinates are missing — common with VPNs, Tor, or local development.'}
           </p>
           {hasGeo && (
-            <p className="font-mono text-[0.78rem] text-white/50 mt-3">{coordText}</p>
+            <p className="font-mono text-[0.78rem] text-np-muted mt-3">{coordText}</p>
           )}
         </div>
       )}
 
       {/* GPS compare */}
       <div
-        className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-4 mb-4 animate-fade-up"
+        className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-4 mb-4 animate-fade-up"
         style={{ '--delay': '0.08s' } as React.CSSProperties}
       >
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
             <Navigation size={14} className="text-emerald-400/80" />
-            <p className="text-[0.82rem] font-semibold text-white/80">GPS vs IP compare</p>
+            <p className="text-[0.82rem] font-semibold text-np">GPS vs IP compare</p>
           </div>
           {!gps && gpsStatus !== 'loading' && (
             <button onClick={requestGps} className="cta-primary text-[0.78rem] py-2 px-3">
@@ -456,27 +456,27 @@ export default function GeolocationMap() {
             </button>
           )}
           {gpsStatus === 'loading' && (
-            <span className="text-[0.72rem] text-white/40 flex items-center gap-1.5">
+            <span className="text-[0.72rem] text-np-muted flex items-center gap-1.5">
               <RefreshCw size={13} className="animate-spin" /> Requesting location…
             </span>
           )}
         </div>
 
         {gpsMessage && (
-          <p className="text-[0.72rem] text-white/35 mb-3">{gpsMessage}</p>
+          <p className="text-[0.72rem] text-np-muted mb-3">{gpsMessage}</p>
         )}
 
         {gps && ipPoint && gpsDistanceKm != null && (
           <div className="space-y-2 mb-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[0.76rem] text-white/35">GPS coordinates</span>
-              <span className="font-mono text-[0.78rem] text-white/75">
+              <span className="text-[0.76rem] text-np-muted">GPS coordinates</span>
+              <span className="font-mono text-[0.78rem] text-np">
                 {formatCoords(gps.lat, gps.lon)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[0.76rem] text-white/35">Distance from IP pin</span>
-              <span className="font-mono text-[0.78rem] text-white/75">
+              <span className="text-[0.76rem] text-np-muted">Distance from IP pin</span>
+              <span className="font-mono text-[0.78rem] text-np">
                 {formatDistanceKm(gpsDistanceKm)}
               </span>
             </div>
@@ -485,7 +485,7 @@ export default function GeolocationMap() {
                 <Badge variant="orange">
                   <Shield size={10} /> VPN / proxy signal
                 </Badge>
-                <p className="text-[0.72rem] text-white/35 leading-relaxed">
+                <p className="text-[0.72rem] text-np-muted leading-relaxed">
                   GPS is more than {GPS_IP_MISMATCH_KM} km from IP geolocation — your connection may be routed or masked.
                 </p>
               </div>
@@ -493,13 +493,13 @@ export default function GeolocationMap() {
           </div>
         )}
 
-        <div className="flex items-baseline justify-between gap-4 py-2 border-t border-white/[0.04]">
-          <span className="text-[0.76rem] text-white/30">Browser timezone</span>
-          <span className="text-[0.78rem] font-mono text-white/75">{browserTimezone ?? '—'}</span>
+        <div className="flex items-baseline justify-between gap-4 py-2 border-t border-np">
+          <span className="text-[0.76rem] text-np-faint">Browser timezone</span>
+          <span className="text-[0.78rem] font-mono text-np">{browserTimezone ?? '—'}</span>
         </div>
         <div className="flex items-baseline justify-between gap-4 py-2">
-          <span className="text-[0.76rem] text-white/30">IP timezone</span>
-          <span className="text-[0.78rem] font-mono text-white/75">{ipData.timezone ?? '—'}</span>
+          <span className="text-[0.76rem] text-np-faint">IP timezone</span>
+          <span className="text-[0.78rem] font-mono text-np">{ipData.timezone ?? '—'}</span>
         </div>
         {timezoneMismatch && (
           <p className="text-[0.72rem] text-orange-300/70 mt-2 flex items-start gap-1.5">
@@ -512,18 +512,18 @@ export default function GeolocationMap() {
       {/* Antipode */}
       {antipodePoint && (
         <div
-          className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-4 animate-fade-up"
+          className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-4 animate-fade-up"
           style={{ '--delay': '0.12s' } as React.CSSProperties}
         >
           <div className="flex items-center gap-2 mb-2">
             <Globe2 size={14} className="text-amber-400/80" />
-            <p className="text-[0.82rem] font-semibold text-white/80">Antipode</p>
+            <p className="text-[0.82rem] font-semibold text-np">Antipode</p>
           </div>
-          <p className="text-[0.78rem] text-white/45 mb-2 leading-relaxed">
+          <p className="text-[0.78rem] text-np-muted mb-2 leading-relaxed">
             The point on the opposite side of Earth from your IP geolocation pin.
           </p>
           <div className="flex items-center gap-2">
-            <p className="font-mono text-[0.78rem] text-white/60">{antipodeText}</p>
+            <p className="font-mono text-[0.78rem] text-np-muted">{antipodeText}</p>
             <CopyButton text={antipodeText} />
           </div>
         </div>

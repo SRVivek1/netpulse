@@ -24,7 +24,7 @@ export function CopyButton({ text, className }: { text: string; className?: stri
         'transition-all duration-150',
         copied
           ? 'border-emerald-400/40 bg-emerald-400/8 text-emerald-400'
-          : 'border-white/10 bg-[#161a20] text-white/30 hover:border-white/20 hover:text-white/70',
+          : 'border-[var(--np-border-strong)] bg-elevated text-np-faint hover:border-[var(--np-border-strong)] hover:text-np',
         className
       )}
     >

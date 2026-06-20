@@ -12,39 +12,39 @@ const { features, siteName, version } = Astro.props;
 <aside
   id="np-sidebar"
   class="hidden md:flex flex-col w-[240px] shrink-0 h-screen
-         bg-[#0f1115] border-r border-white/[0.05] sticky top-0 z-20 overflow-y-auto"
+         bg-surface border-r border-np sticky top-0 z-20 overflow-y-auto"
   role="navigation"
   aria-label="Feature navigation"
 >
   <!-- Logo -->
   <a href="/"
-    class="flex items-center gap-2.5 px-4 h-14 border-b border-white/[0.05] shrink-0 no-underline group"
+    class="flex items-center gap-2.5 px-4 h-14 border-b border-np shrink-0 no-underline group"
     aria-label={`${siteName} home`}>
     <div class="w-7 h-7 rounded-lg flex items-center justify-center font-display font-extrabold
-                text-sm text-white shrink-0 bg-gradient-to-br from-sky-400 to-violet-500
-                shadow-[0_0_12px_rgba(56,189,248,0.3)] group-hover:shadow-[0_0_20px_rgba(56,189,248,0.45)]
+                text-sm text-white shrink-0 bg-gradient-to-br from-accent to-violet-500
+                shadow-[0_0_12px_var(--np-accent-subtle)] group-hover:shadow-[0_0_20px_var(--np-accent-muted)]
                 transition-shadow" aria-hidden="true">N</div>
     <div>
-      <div class="font-display font-bold text-[0.95rem] text-white/90 leading-none">{siteName}</div>
-      <div class="font-mono text-[0.63rem] text-white/25 mt-0.5">v{version}</div>
+      <div class="font-display font-bold text-[0.95rem] text-np leading-none">{siteName}</div>
+      <div class="font-mono text-[0.63rem] text-np-faint mt-0.5">v{version}</div>
     </div>
   </a>
 
   <!-- Nav -->
   <nav class="flex-1 p-2 overflow-y-auto" aria-label="Tools">
-    <p class="px-2.5 py-2 text-[0.63rem] font-semibold uppercase tracking-[0.1em] text-white/20">Tools</p>
+    <p class="px-2.5 py-2 text-[0.63rem] font-semibold uppercase tracking-[0.1em] text-np-faint">Tools</p>
 
     {features.map((f) => (
       <button
         class="np-nav-btn w-full flex items-center gap-2.5 px-2.5 py-[7px] mb-0.5
-               rounded-md text-[0.845rem] text-white/45 font-normal
+               rounded-md text-[0.845rem] text-np-muted font-normal
                bg-transparent border-0 cursor-pointer text-left
                transition-all duration-150
-               hover:bg-white/[0.04] hover:text-white/75
+               hover:bg-hover hover:text-np
                relative group"
         data-feature={f.id}>
         <!-- active indicator -->
-        <span class="absolute left-0 inset-y-[25%] w-[2px] rounded-full bg-sky-400
+        <span class="absolute left-0 inset-y-[25%] w-[2px] rounded-full bg-accent
                      opacity-0 transition-opacity group-[.active]:opacity-100" aria-hidden="true" />
         <span class="np-icon-slot size-[14px] shrink-0 flex items-center" data-icon={f.icon} aria-hidden="true" />
         <span class="flex-1 flex items-center gap-1.5 min-w-0 truncate">
@@ -56,7 +56,7 @@ const { features, siteName, version } = Astro.props;
             </span>
           )}
         </span>
-        <svg class="size-3 text-white/20 opacity-0 group-hover:opacity-100 group-[.active]:opacity-100
+        <svg class="size-3 text-np-faint opacity-0 group-hover:opacity-100 group-[.active]:opacity-100
                     transition-opacity shrink-0" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true">
@@ -67,12 +67,12 @@ const { features, siteName, version } = Astro.props;
   </nav>
 
   <!-- Footer -->
-  <div class="p-3 border-t border-white/[0.05] shrink-0">
+  <div class="p-3 border-t border-np shrink-0">
     <div id="ad-sidebar-bottom" class="hidden mb-2">
       <ins class="adsbygoogle block" data-ad-format="auto"
            data-full-width-responsive="true" data-ad-slot="" />
     </div>
-    <p class="text-[0.67rem] text-white/18 text-center leading-relaxed">
+    <p class="text-[0.67rem] text-np-faint text-center leading-relaxed">
       Powered by Cloudflare's global edge<br/>No data stored or logged
     </p>
   </div>

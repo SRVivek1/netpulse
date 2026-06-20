@@ -10,11 +10,11 @@ export function IpNeighbourhood({ ip }: Props) {
 
   if (!hood) {
     return (
-      <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-        <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-white/25 mb-1.5">
+      <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-3">
+        <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint mb-1.5">
           IP neighbourhood
         </p>
-        <p className="text-[0.75rem] text-white/35">
+        <p className="text-[0.75rem] text-np-muted">
           Neighbourhood lookup is available for IPv4 addresses only.
         </p>
       </div>
@@ -22,10 +22,10 @@ export function IpNeighbourhood({ ip }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+    <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-3">
       <div className="flex items-center justify-between mb-2.5">
-        <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-white/25">
-          IP neighbourhood <span className="text-white/15 font-normal">/24 block</span>
+        <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint">
+          IP neighbourhood <span className="text-np-faint font-normal">/24 block</span>
         </p>
         <CopyButton text={hood.ips.join('\n')} className="size-[26px] !rounded-md" />
       </div>
@@ -35,8 +35,8 @@ export function IpNeighbourhood({ ip }: Props) {
             key={addr}
             className={
               i === hood.currentIndex
-                ? 'px-2 py-0.5 rounded-md bg-sky-400/15 text-sky-300 border border-sky-400/25'
-                : 'px-2 py-0.5 rounded-md text-white/35 hover:text-white/55 transition-colors'
+                ? 'px-2 py-0.5 rounded-md bg-accent/15 text-accent border border-accent/25'
+                : 'px-2 py-0.5 rounded-md text-np-muted hover:text-np transition-colors'
             }
           >
             {addr}

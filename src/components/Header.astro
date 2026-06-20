@@ -1,14 +1,15 @@
 ---
+import { ThemeSelector } from './ui/ThemeSelector';
 ---
 <header
   class="h-14 flex items-center justify-between px-6 shrink-0
-         bg-[#0a0c0f]/80 backdrop-blur-md border-b border-white/[0.05]
+         bg-np-base/80 backdrop-blur-md border-b border-np
          sticky top-0 z-10"
   role="banner"
 >
   <div id="np-header-title"
     class="flex items-center gap-2 font-display font-semibold text-[0.9rem]
-           text-white/85 tracking-tight min-w-0"
+           text-np tracking-tight min-w-0"
     aria-live="polite">
     <!-- Populated by client router -->
   </div>
@@ -21,10 +22,12 @@
 
     <!-- Edge status pill -->
     <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.7rem]
-                font-mono text-white/35 bg-[#161a20] border border-white/[0.06]"
+                font-mono text-np-muted bg-elevated border border-np"
          aria-label="Status: edge connected">
       <span class="size-[6px] rounded-full bg-emerald-400 pulse-dot" aria-hidden="true" />
       <span>Edge Connected</span>
     </div>
+
+    <ThemeSelector client:load />
   </div>
 </header>
