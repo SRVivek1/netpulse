@@ -495,12 +495,12 @@ body {
 }
 
 .bento-tile__title {
-  font-size: 0.65rem;
-  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-family: var(--font-sans);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--np-text-faint);
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: var(--np-text-muted);
 }
 
 .bento-tile__footer {
