@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search, AlertTriangle, ShieldCheck, ShieldOff, RefreshCw } from 'lucide-react';
 import type { DnsFullResult, DomainRegistration } from '../../../types/api';
+import { detectInputKind } from '../../../lib/dns';
 import { fetchWithTimeout } from '../../../lib/utils';
 import { Card, CardBody, CardHeader } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
@@ -182,8 +183,11 @@ export default function DnsResolver() {
     }
   }, []);
 
+  const canLookup = detectInputKind(query) !== null;
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    if (!canLookup) return;
     void runLookup(query, true);
   };
 
@@ -222,7 +226,11 @@ export default function DnsResolver() {
           />
         </div>
 
-        <button type="submit" disabled={loading} className="cta-primary flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={loading || !canLookup}
+          className="cta-primary flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+        >
           {loading ? (
             <>
               <RefreshCw size={14} className="animate-spin" />
@@ -314,7 +322,13 @@ export default function DnsResolver() {
                       label={`${record.name} · TTL ${record.ttl}s`}
                       mono
                       value={
-                        <span className="flex items-center gap-1.5 max-w-[70%] break-all">
+                        <span
+                          className={
+                            section.type === 'A' || section.type === 'AAAA'
+                              ? 'flex items-center gap-1.5 whitespace-nowrap'
+                              : 'flex items-center gap-1.5 min-w-0 break-all'
+                          }
+                        >
                           {record.data}
                           <CopyButton text={record.data} />
                         </span>

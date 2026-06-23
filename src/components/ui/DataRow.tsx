@@ -15,11 +15,11 @@ export function DataRow({ label, value, mono = false, className }: DataRowProps)
       'hover:bg-hover/50 transition-colors group',
       className
     )}>
-      <span className="text-[0.76rem] text-np-faint shrink-0 whitespace-nowrap">
+      <span className="text-[0.76rem] font-semibold text-np-muted min-w-0 truncate">
         {label}
       </span>
       <span className={cn(
-        'text-[0.84rem] text-np text-right flex items-center gap-1.5 flex-wrap justify-end',
+        'text-[0.84rem] text-np text-right flex items-center gap-1.5 shrink-0 justify-end',
         mono && 'font-mono text-[0.78rem]'
       )}>
         {value ?? <span className="text-np-faint">—</span>}
