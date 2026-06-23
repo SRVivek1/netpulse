@@ -51,6 +51,37 @@ export function getDnsRecordTypeInfo(type: string): DnsRecordTypeInfo {
   };
 }
 
+export interface DnsGlossaryEntry {
+  term: string;
+  label: string;
+  description: string;
+}
+
+const DNS_LOOKUP_GLOSSARY_ORDER = ['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS', 'SOA', 'PTR'] as const satisfies readonly DnsRecordType[];
+
+const DNS_METHOD_GLOSSARY: DnsGlossaryEntry[] = [
+  {
+    term: 'DoH',
+    label: 'DNS-over-HTTPS resolver',
+    description: 'DNS queries are sent over encrypted HTTPS to Cloudflare\'s public resolver (1.1.1.1), with Google DoH as a fallback when needed.',
+  },
+  {
+    term: 'RDAP',
+    label: 'Registration lookup',
+    description: 'Registration Data Access Protocol — the modern successor to WHOIS. Returns registrar, registration dates, status codes, and other public ownership data.',
+  },
+];
+
+/** Glossary for the DNS lookup intro — record types plus resolver and registration methods. */
+export const DNS_LOOKUP_GLOSSARY: DnsGlossaryEntry[] = [
+  ...DNS_LOOKUP_GLOSSARY_ORDER.map((type) => ({
+    term: type,
+    label: DNS_RECORD_TYPE_INFO[type].label,
+    description: DNS_RECORD_TYPE_INFO[type].description,
+  })),
+  ...DNS_METHOD_GLOSSARY,
+];
+
 /** Record types queried for a full domain lookup. */
 export const DOMAIN_RECORD_TYPES = ['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS', 'SOA'] as const satisfies readonly DnsRecordType[];
 

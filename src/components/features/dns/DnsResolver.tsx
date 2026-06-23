@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search, AlertTriangle, ShieldCheck, ShieldOff, RefreshCw } from 'lucide-react';
 import type { DnsFullResult, DomainRegistration } from '../../../types/api';
-import { detectInputKind, getDnsRecordTypeInfo } from '../../../lib/dns';
+import { detectInputKind, DNS_LOOKUP_GLOSSARY, getDnsRecordTypeInfo } from '../../../lib/dns';
 import { fetchWithTimeout } from '../../../lib/utils';
 import { Card, CardBody, CardHeader } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
@@ -214,6 +214,25 @@ export default function DnsResolver() {
         <p className="text-[0.75rem] font-mono text-np-faint mt-1.5 leading-relaxed">
           Record types: A, AAAA, MX, TXT, CNAME, NS, SOA · PTR for reverse DNS · DoH resolver · RDAP registration
         </p>
+        <details className="mt-2.5 group">
+          <summary className="text-[0.75rem] text-accent/80 hover:text-accent cursor-pointer list-none flex items-center gap-1.5 transition-colors [&::-webkit-details-marker]:hidden">
+            <span className="text-[0.65rem] transition-transform group-open:rotate-90" aria-hidden>▶</span>
+            What do these terms mean?
+          </summary>
+          <dl className="mt-3 space-y-2.5 pl-3 border-l border-np">
+            {DNS_LOOKUP_GLOSSARY.map((entry) => (
+              <div key={entry.term}>
+                <dt className="text-[0.75rem]">
+                  <span className="font-mono font-semibold text-np">{entry.term}</span>
+                  <span className="text-np-muted"> · {entry.label}</span>
+                </dt>
+                <dd className="text-[0.75rem] text-np-muted mt-0.5 leading-relaxed">
+                  {entry.description}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </details>
       </div>
 
       <form onSubmit={handleSubmit} className="np-card p-5 space-y-4">
