@@ -58,6 +58,11 @@ export interface SiteConfig {
     uploadSizeMB: number;
     pingCount: number;
     pingWarmupCount: number;
+    autoPreset: {
+      probeSizeMB: number;
+      thresholdsMbps: { fast: number; gigabit: number };
+      reuseLastResultMs: number;
+    };
   };
   doh: { primary: string; fallback: string };
   serviceStatus: {

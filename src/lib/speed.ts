@@ -20,14 +20,35 @@ export interface SpeedTestConfig {
   presets: SiteConfig['speedTest']['presets'];
 }
 
+export interface AutoPresetConfig {
+  probeSizeMB: number;
+  thresholdsMbps: { fast: number; gigabit: number };
+  reuseLastResultMs: number;
+}
+
+export type AutoPresetSource = 'last-result' | 'probe' | 'network-api' | 'tcp-rtt' | 'fallback';
+
+export interface AutoPresetResult {
+  preset: SpeedPresetId;
+  source: AutoPresetSource;
+  estimatedMbps?: number;
+}
+
+interface LastSpeedResult {
+  downloadMbps: number;
+  preset: SpeedPresetId;
+  at: number;
+}
+
 const COOLDOWN_MS = 30_000;
 const COOLDOWN_KEY = 'np-speed:last-run';
+const LAST_RESULT_KEY = 'np-speed:last-result';
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function meanAbsoluteDeviation(values: number[]): number {
+export function meanAbsoluteDeviation(values: number[]): number {
   if (values.length < 2) return 0;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   return values.reduce((sum, v) => sum + Math.abs(v - mean), 0) / values.length;
@@ -66,6 +87,128 @@ export function markSpeedTestCompleted(): void {
   } catch {
     // sessionStorage unavailable
   }
+}
+
+export function saveLastSpeedResult(downloadMbps: number, preset: SpeedPresetId): void {
+  try {
+    const payload: LastSpeedResult = { downloadMbps, preset, at: Date.now() };
+    sessionStorage.setItem(LAST_RESULT_KEY, JSON.stringify(payload));
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+export function getLastSpeedResult(): LastSpeedResult | null {
+  try {
+    const raw = sessionStorage.getItem(LAST_RESULT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LastSpeedResult;
+    if (
+      typeof parsed.downloadMbps !== 'number' ||
+      typeof parsed.at !== 'number' ||
+      !parsed.preset
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function getNetworkDownlinkHint(): { downlink: number | null; saveData: boolean } {
+  if (typeof navigator === 'undefined') {
+    return { downlink: null, saveData: false };
+  }
+  const nav = navigator as Navigator & {
+    connection?: { downlink?: number; saveData?: boolean };
+    mozConnection?: { downlink?: number; saveData?: boolean };
+    webkitConnection?: { downlink?: number; saveData?: boolean };
+  };
+  const conn = nav.connection ?? nav.mozConnection ?? nav.webkitConnection ?? null;
+  const downlink = conn?.downlink;
+  return {
+    downlink: typeof downlink === 'number' && downlink > 0 ? downlink : null,
+    saveData: conn?.saveData ?? false,
+  };
+}
+
+export function presetFromMbps(
+  mbps: number,
+  thresholds: { fast: number; gigabit: number },
+): SpeedPresetId {
+  if (mbps >= thresholds.gigabit) return 'gigabit';
+  if (mbps >= thresholds.fast) return 'fast';
+  return 'standard';
+}
+
+export async function probeDownloadMbps(
+  config: Pick<SpeedTestConfig, 'assetsPath'>,
+  probeSizeMB: number,
+): Promise<number> {
+  const byteLimit = probeSizeMB * 1024 * 1024;
+  const bust = crypto.randomUUID();
+  const url = `${config.assetsPath}/chunk-1.bin?r=${bust}`;
+  const start = performance.now();
+  const received = await fetchChunkWithProgress(url, byteLimit, () => {});
+  const durationMs = performance.now() - start;
+  if (received < byteLimit * 0.9) {
+    throw new Error('Probe download incomplete');
+  }
+  return bytesToMbps(received, durationMs);
+}
+
+export async function resolveAutoPreset(
+  config: SpeedTestConfig,
+  autoPreset: AutoPresetConfig,
+  hints?: { clientTcpRtt?: number | null },
+): Promise<AutoPresetResult> {
+  const { thresholdsMbps } = autoPreset;
+  const { saveData, downlink } = getNetworkDownlinkHint();
+
+  if (saveData) {
+    return { preset: 'standard', source: 'fallback', estimatedMbps: downlink ?? undefined };
+  }
+
+  const last = getLastSpeedResult();
+  if (last && Date.now() - last.at < autoPreset.reuseLastResultMs) {
+    return {
+      preset: presetFromMbps(last.downloadMbps, thresholdsMbps),
+      source: 'last-result',
+      estimatedMbps: last.downloadMbps,
+    };
+  }
+
+  try {
+    const mbps = await probeDownloadMbps(config, autoPreset.probeSizeMB);
+    return {
+      preset: presetFromMbps(mbps, thresholdsMbps),
+      source: 'probe',
+      estimatedMbps: mbps,
+    };
+  } catch {
+    // probe failed — try weaker hints
+  }
+
+  if (downlink != null) {
+    return {
+      preset: presetFromMbps(downlink, thresholdsMbps),
+      source: 'network-api',
+      estimatedMbps: downlink,
+    };
+  }
+
+  const rtt = hints?.clientTcpRtt;
+  if (typeof rtt === 'number' && rtt > 0) {
+    const estimatedMbps = rtt < 30 ? 150 : rtt < 80 ? 50 : 20;
+    return {
+      preset: presetFromMbps(estimatedMbps, thresholdsMbps),
+      source: 'tcp-rtt',
+      estimatedMbps,
+    };
+  }
+
+  return { preset: 'standard', source: 'fallback' };
 }
 
 export async function measurePing(
@@ -217,6 +360,7 @@ export async function runSpeedTest(
 
   onProgress?.({ phase: 'done' });
   markSpeedTestCompleted();
+  saveLastSpeedResult(download.mbps, preset);
 
   return {
     ping,

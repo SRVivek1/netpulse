@@ -70,7 +70,12 @@
     "assetsPath": "/speed",
     "uploadSizeMB": 5,
     "pingCount": 8,
-    "pingWarmupCount": 2
+    "pingWarmupCount": 2,
+    "autoPreset": {
+      "probeSizeMB": 1,
+      "thresholdsMbps": { "fast": 80, "gigabit": 400 },
+      "reuseLastResultMs": 300000
+    }
   },
   "doh": {
     "primary": "https://cloudflare-dns.com/dns-query",
