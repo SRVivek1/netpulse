@@ -91,3 +91,25 @@ export interface IpData {
   connectionRisk: ConnectionRisk;
   servedAt: string;
 }
+
+export type SpeedPresetId = 'standard' | 'fast' | 'gigabit';
+
+export interface PingResult {
+  latencyMs: number;
+  jitterMs: number;
+  samples: number[];
+}
+
+export interface TransferResult {
+  mbps: number;
+  bytesTransferred: number;
+  durationMs: number;
+}
+
+export interface SpeedTestResult {
+  ping: PingResult;
+  download: TransferResult;
+  upload: TransferResult;
+  preset: SpeedPresetId;
+  completedAt: string;
+}

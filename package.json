@@ -10,7 +10,10 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-types": "wrangler types"
+    "generate-types": "wrangler types",
+    "generate-speed-chunks": "node scripts/generate-speed-chunks.mjs",
+    "prebuild": "npm run generate-speed-chunks",
+    "predev": "npm run generate-speed-chunks"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.7.0",

@@ -83,13 +83,18 @@ netpulse/
 │   └── feature-flags.json   # Feature toggle, display order, labels, icons
 ├── public/
 │   ├── favicon.svg
+│   ├── speed/               # Generated .bin chunks (gitignored; see scripts/)
 │   └── _headers             # Cloudflare edge caching rules
+├── scripts/
+│   └── generate-speed-chunks.mjs  # Build-time speed test binary generator
 ├── src/
 │   ├── pages/
 │   │   ├── index.astro      # Main entry point — renders the full dashboard
 │   │   └── api/
 │   │       ├── ip.ts        # GET /api/ip — returns IP + geo from CF edge
+│   │       ├── dns.ts       # GET /api/dns — DoH proxy for DNS lookups
 │   │       ├── ping.ts      # GET|HEAD /api/ping — latency probe endpoint
+│   │       ├── upload.ts    # POST /api/upload — upload speed test discard
 │   │       └── config.ts    # GET /api/config — public-safe config dump
 │   ├── layouts/
 │   │   └── Shell.astro      # Root HTML shell: sidebar, header, font loading
@@ -98,8 +103,15 @@ netpulse/
 │   │   ├── Sidebar.astro    # Left navigation (desktop); bottom nav (mobile)
 │   │   ├── features/
 │   │   │   ├── ip/
-│   │   │   │   └── IpDiscovery.tsx   # IP discovery React feature panel
-│   │   │   └── ComingSoon.tsx        # Placeholder for unbuilt features
+│   │   │   │   ├── IpDiscovery.tsx           # IP discovery React feature panel
+│   │   │   │   └── BrowserFingerprintPanel.tsx
+│   │   │   ├── dns/
+│   │   │   │   └── DnsResolver.tsx           # DNS lookup panel
+│   │   │   ├── speed/
+│   │   │   │   └── SpeedTest.tsx             # Speed test panel
+│   │   │   ├── geolocation/
+│   │   │   │   └── GeoMapPanel.tsx           # Embedded map (used by IP panel)
+│   │   │   └── ComingSoon.tsx                # Placeholder for unbuilt features
 │   │   └── ui/
 │   │       ├── Card.tsx       # Card, CardHeader, CardBody
 │   │       ├── DataRow.tsx    # Labeled key-value row
@@ -107,10 +119,16 @@ netpulse/
 │   │       └── CopyButton.tsx # Copy-to-clipboard with visual feedback
 │   ├── lib/
 │   │   ├── config.ts        # Config loader — splits public vs private fields
+│   │   ├── ip.ts            # IP version detection, ASN normalization, risk heuristics
+│   │   ├── dns.ts           # DoH client, record types, input validation
+│   │   ├── speed.ts         # Ping/download/upload measurement
+│   │   ├── whois.ts         # RDAP domain registration lookups
+│   │   ├── browser.ts       # Client-side browser fingerprint collection
+│   │   ├── navigation.ts    # Cross-feature panel navigation helper
 │   │   ├── router.ts        # Vanilla JS hash-based panel router
 │   │   └── utils.ts         # cn(), copyToClipboard(), formatCoords()
 │   ├── types/
-│   │   ├── api.ts           # IpData interface
+│   │   ├── api.ts           # IpData, DnsResult, DnsFullResult, etc.
 │   │   └── config.ts        # SiteConfig, FeatureFlags, AppConfig types
 │   └── styles/
 │       └── global.css       # Global Tailwind directives + custom animations
@@ -165,7 +183,7 @@ Controls which features appear in the sidebar and in what order. Toggle `enabled
    }
    ```
 
-3. **Register it** in `src/pages/index.astro` — add it to the feature-to-component mapping alongside `IpDiscovery`.
+3. **Register it** in `src/pages/index.astro` — add the feature ID to the `IMPLEMENTED` set and map it in the panel conditional alongside `IpDiscovery`, `DnsResolver`, and `SpeedTest`.
 
 4. **Add an API route** (if needed) at `src/pages/api/my-feature.ts`:
    ```ts
@@ -245,7 +263,7 @@ MY_SECRET=local_value
 
 - **API routes:** Add `console.log()` — output appears in the terminal running `npm run dev`.
 - **React components:** Use the browser DevTools console and React DevTools extension.
-- **Routing issues:** The client-side router in `src/lib/router.ts` uses `window.location.hash`. Navigate to `/#ip_discovery` to deep-link to a panel.
+- **Routing issues:** The client-side router in `src/lib/router.ts` uses `window.location.hash`. Navigate to `/#ip_discovery`, `/#dns_resolver`, or `/#speed_test` to deep-link to a panel.
 - **CF edge data locally:** The `platformProxy` provides a simulated `cf` object. Real geolocation data is only available after deploying to Cloudflare.
 
 ---

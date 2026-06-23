@@ -48,7 +48,9 @@ Browser
 │  │  ┌──────────────────────────┐  │  │
 │  │  │   API route handlers     │  │  │
 │  │  │   /api/ip                │  │  │
+│  │  │   /api/dns               │  │  │
 │  │  │   /api/ping              │  │  │
+│  │  │   /api/upload            │  │  │
 │  │  │   /api/config            │  │  │
 │  │  └──────────────────────────┘  │  │
 │  └────────────────────────────────┘  │
@@ -161,7 +163,7 @@ TypeScript interfaces shared across the app:
 
 | File | Types |
 |------|-------|
-| `api.ts` | `IpData` — shape of the `/api/ip` response |
+| `api.ts` | `IpData`, `DnsResult`, `DnsFullResult`, `SpeedTestResult`, `DomainRegistration` — API response shapes |
 | `config.ts` | `SiteConfig`, `FeatureFlag`, `AppConfig` — shape of config files |
 
 ### `config/`
@@ -187,7 +189,7 @@ JSON-driven configuration that controls behavior without code changes:
 
 ## Data Flow
 
-### IP Discovery (the only implemented feature)
+### IP Discovery
 
 ```
 IpDiscovery.tsx mounts
@@ -211,6 +213,46 @@ IpDiscovery.tsx mounts
   └── Renders:
         ├── Skeleton cards (loading=true)
         └── Data cards with DataRow, Badge, CopyButton (loading=false)
+```
+
+### DNS Resolver
+
+```
+DnsResolver.tsx — user submits domain or IP
+  │
+  ├── Check sessionStorage cache (60s TTL, key: np-dns:full:<name>)
+  │
+  ├── fetch('/api/dns?name=<query>')
+  │     │
+  │     │  [on CF edge]
+  │     ├── api/dns.ts validates input (RFC 1123 / IP)
+  │     ├── Proxies to DoH (Cloudflare primary, Google fallback)
+  │     ├── For domains: parallel RDAP registration lookup
+  │     └── Returns JSON: DnsFullResult
+  │
+  ├── writeCache(), setResult()
+  │
+  └── Renders:
+        ├── Per-type record cards (A, AAAA, MX, …)
+        ├── DNSSEC AD badge, resolver badge
+        └── Domain registration card (RDAP)
+```
+
+### Speed Test
+
+```
+SpeedTest.tsx — user selects preset and starts test
+  │
+  ├── Phase A: measurePing() — HEAD /api/ping (8×, 2 warmup)
+  │
+  ├── Phase B: measureDownload() — 4 parallel GET /speed/chunk-*.bin
+  │     ├── HTTP Range header sized per preset
+  │     └── Static assets — zero Worker CPU
+  │
+  ├── Phase C: measureUpload() — POST /api/upload
+  │     └── api/upload.ts stream-discards body via getReader()
+  │
+  └── Renders canvas gauge + ping/download/upload result cards
 ```
 
 ### Config Loading
@@ -337,7 +379,7 @@ When implementing one of the planned features (speed test, DNS resolver, etc.), 
 |------------|-------|--------|
 | `ip_discovery` | IP & Location | Implemented (includes embedded geolocation map, antipode pin, GPS vs IP) |
 | `dns_resolver` | DNS Lookup | Implemented |
-| `speed_test` | Speed Test | Planned |
+| `speed_test` | Speed Test | Implemented |
 | `service_status` | Service Status | Planned |
 | `webrtc_leak` | WebRTC Leak | Beta / Planned |
 | `http_headers` | HTTP Headers | Beta / Planned |
@@ -357,6 +399,12 @@ When implementing one of the planned features (speed test, DNS resolver, etc.), 
 | `config/feature-flags.json` | Toggling/reordering features, adding feature metadata |
 | `config/site.json` | Changing branding, API keys, ad slots, analytics |
 | `src/pages/api/ip.ts` | Adding/removing fields from the IP response |
+| `src/pages/api/dns.ts` | DNS lookup proxy and response shape |
+| `src/lib/dns.ts` | DoH client, record types, input validation |
+| `src/lib/whois.ts` | RDAP domain registration lookups |
+| `src/lib/speed.ts` | Ping/download/upload measurement logic |
+| `src/pages/api/upload.ts` | Upload speed test stream-discard handler |
+| `scripts/generate-speed-chunks.mjs` | Build-time speed test binary generator |
 | `src/lib/config.ts` | Adding a new secret field that must be stripped from public config |
 | `src/layouts/Shell.astro` | Changing the page chrome (fonts, layout, global scripts) |
 | `tailwind.config.cjs` | Adding design tokens, custom colors, or fonts |

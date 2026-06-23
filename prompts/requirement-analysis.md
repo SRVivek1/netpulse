@@ -10,7 +10,7 @@
 
 NetPulse (Network Intelligence Hub) is architecturally sound and buildable entirely on Cloudflare Pages with the specified constraints. The project has **no traditional backend application** — all features must use one of three data buckets: browser-native Web APIs (Bucket A), Cloudflare edge metadata via Pages Functions (Bucket B), or free public APIs proxied from the edge with SSRF guards (Bucket C).
 
-Feature 1 (IP & ASN Discovery) is **shipped**. The remaining original five core features are feasible with documented design corrections. Competitive research against [InfoByIp.com](https://www.infobyip.com/) identified nine adoptable feature additions (Features 14–22) that fit the client-first architecture, plus a clear skip list (traceroute, port scanning, dev minifiers).
+Features 1 (IP & ASN Discovery), 4 (DNS Resolver + PTR), and 3 (Speed Test) are **shipped**. The remaining MVP sidebar tool is Service Reachability (Feature 5). Competitive research against [InfoByIp.com](https://www.infobyip.com/) identified nine adoptable feature additions (Features 14–22) that fit the client-first architecture, plus a clear skip list (traceroute, port scanning, dev minifiers).
 
 Privacy and legal obligations are manageable without significant friction when `request.cf` is preferred over external geo APIs for the visitor's own session. A phased build strategy (Phase 0–5) prioritizes MVP launch with the original five sidebar tools, then InfoByIp homepage parity, then privacy/developer tools, then free API lookup tools.
 
@@ -96,10 +96,12 @@ All Features 1–22, WHOIS, and weather remain in scope on the free tier. Alread
 |---|---|---|
 | Feature 1 — IP & ASN Discovery | **Complete** | `src/pages/api/ip.ts`, `src/lib/ip.ts`, `src/lib/browser.ts`, `src/components/features/ip/*` |
 | Feature 2 — Geolocation Map (+ 15, 16) | **Complete (embedded in Feature 1)** | `src/components/features/geolocation/GeoMapPanel.tsx` inside `IpDiscovery.tsx` |
+| Feature 3 — Real-Time Network Speed Test Engine | **Complete** | `src/pages/api/ping.ts`, `src/pages/api/upload.ts`, `src/lib/speed.ts`, `src/components/features/speed/*`, `scripts/generate-speed-chunks.mjs` |
 | Feature 4 — DNS Resolver (+ 20 PTR) | **Complete** | `src/pages/api/dns.ts`, `src/lib/dns.ts`, `src/components/features/dns/*` |
-| Features 3, 5–13 | Planned / ComingSoon | `src/pages/index.astro` (`IMPLEMENTED` set) |
+| Features 5–13 | Planned / ComingSoon | `src/pages/index.astro` (`IMPLEMENTED` set) |
 | Features 14–22 | Partial or documented | See Feature Classification Matrix |
-| `/api/ping` | Stub only | `src/pages/api/ping.ts` |
+| `/api/ping` | Shipped | `src/pages/api/ping.ts` |
+| `/api/upload` | Shipped | `src/pages/api/upload.ts` |
 | `/api/config` | Shipped | `src/pages/api/config.ts` |
 
 **Feature 1 design corrections already applied:**
@@ -174,7 +176,7 @@ All Features 1–22, WHOIS, and weather remain in scope on the free tier. Alread
 
 ### Feature 3 — Real-Time Network Speed Test Engine
 
-**Feasibility: HIGH** | **Bucket: A + B (static + edge)** | **Status: Planned**
+**Feasibility: HIGH** | **Bucket: A + B (static + edge)** | **Status: Complete**
 
 #### Phase A: Ping & Jitter
 - 8 successive `HEAD` requests to `/api/ping`; discard first 2 as warmup (configured in `config/site.json` `speedTest.pingCount` / `pingWarmupCount`).
@@ -236,6 +238,14 @@ npm run build
 - Preset selector (Standard / Fast / Gigabit) above the start button.
 - Avoid Chart.js for gauges — no true speedometer support.
 
+**Shipped capabilities:**
+- Ping/jitter via 8× `HEAD /api/ping` with 2-sample warmup
+- Download via 4 parallel static chunk fetches with HTTP Range per preset (Standard/Fast/Gigabit)
+- Upload via `POST /api/upload` with stream-discard Worker handler
+- Canvas gauge with preset selector and sequential test flow
+- 30s cooldown between runs (`sessionStorage`)
+- Build-time chunk generator (`scripts/generate-speed-chunks.mjs`, `prebuild` hook)
+
 ---
 
 ### Feature 4 — Edge-Accelerated DNS Resolver Tool
@@ -248,6 +258,15 @@ npm run build
 - **Feature 20 (Reverse DNS / PTR):** Include PTR lookups via DoH at launch.
 - Surface DNSSEC `AD` (Authenticated Data) flag from DoH JSON response.
 - Cache DNS results in `sessionStorage` with 60-second TTL.
+
+**Shipped capabilities:**
+- Domain or IP search form with RFC 1123 validation and input-kind detection
+- Full multi-type lookup for domains (A, AAAA, MX, TXT, CNAME, NS, SOA) plus PTR for IP input
+- DoH proxy with Cloudflare primary and Google fallback; resolver badge in UI
+- DNSSEC `AD` flag surfaced per record section
+- Domain registration card via RDAP (registrar, dates, status)
+- Per-record copy buttons, glossary, and 60s `sessionStorage` cache
+- Cross-feature CTA from IP Discovery ("Lookup DNS")
 
 **Risks:**
 - Unusual automated query patterns may trigger DoH throttling.
@@ -615,15 +634,15 @@ No backend required. InfoByIp has this as a standalone tool — fits NetPulse si
 | Feature | fast.com | speedtest.net | ipinfo.io | browserleaks | mxtoolbox | InfoByIp | NetPulse |
 |---|---|---|---|---|---|---|---|
 | IP/ASN/Geo | — | Partial | Yes | Yes | — | Yes | **Shipped** |
-| Geolocation map | — | — | Partial | — | — | Yes | Planned |
-| Speed test (full) | Yes | Yes | — | — | — | Ping only | Planned |
-| DNS lookup | — | — | — | — | Yes | Yes | Planned |
-| Reverse DNS | — | — | — | — | Yes | Yes | Planned |
+| Geolocation map | — | — | Partial | — | — | Yes | **Shipped** |
+| Speed test (full) | Yes | Yes | — | — | — | Ping only | **Shipped** |
+| DNS lookup | — | — | — | — | Yes | Yes | **Shipped** |
+| Reverse DNS | — | — | — | — | Yes | Yes | **Shipped** |
 | Service status | — | — | — | — | — | — | Planned |
 | WebRTC leak | — | — | — | Yes | — | Partial | Planned |
 | HTTP headers (self) | — | — | — | Partial | Yes | Yes | Planned |
 | Browser fingerprint | — | — | — | Yes | — | Yes | Planned |
-| GPS vs IP compare | — | — | — | Partial | — | Yes | Planned |
+| GPS vs IP compare | — | — | — | Partial | — | Yes | **Shipped** |
 | Network calculator | — | — | — | — | — | Yes | Planned |
 | DNS propagation | — | — | — | — | Yes | — | Planned |
 | TLS/SSL cert | — | — | — | Yes | — | Partial | Planned |
@@ -648,11 +667,11 @@ Pre-generate high-entropy `.bin` files at build time into `public/speed/`. Stati
 ### 3. Use `no-cors` Fetch for Service Reachability (Client-Side)
 Measures user's connectivity path, not Cloudflare's. `AbortController` with 5s timeout per service.
 
-### 4. Add DNSSEC Flag to DNS Results
-Surface `AD` (Authenticated Data) flag from DoH JSON response.
+### 4. Add DNSSEC Flag to DNS Results — **Done**
+Surface `AD` (Authenticated Data) flag from DoH JSON response. Implemented in `src/lib/dns.ts` and `DnsResolver.tsx`.
 
-### 5. Cache DNS Results
-`sessionStorage` with 60-second TTL to avoid hammering DoH on repeated queries.
+### 5. Cache DNS Results — **Done**
+`sessionStorage` with 60-second TTL to avoid hammering DoH on repeated queries. Implemented in `DnsResolver.tsx`.
 
 ### 6. Tile Provider Fallback Chain
 Primary: Stadia Maps `alidade_smooth_dark` (configured in `config/site.json`).  
@@ -679,7 +698,7 @@ Always use `request.cf` for the current visitor's IP, geo, ASN, and TLS. Externa
 - IP Discovery UI redesign with CTAs, ISP/ASN block, advanced panel
 - Shared UI kit: `Card`, `Badge`, `DataRow`, `CopyButton`
 - Utilities: `src/lib/ip.ts`, `src/lib/navigation.ts`, `src/lib/utils.ts`
-- `/api/ping` stub, `/api/config`
+- `/api/ping`, `/api/upload`, `/api/config`
 
 ---
 
@@ -690,9 +709,9 @@ Build in dependency order:
 | Order | Feature | Endpoints / Notes |
 |---|---|---|
 | — | Geolocation Map (Feature 2 + 15 + 16) | **Done** — embedded in `ip_discovery` via `GeoMapPanel`; no standalone sidebar panel |
-| 1 | DNS Resolver (Feature 4 + 20) | `/api/dns` DoH proxy; PTR support; DNSSEC `AD` flag |
-| 2 | Speed Test (Feature 3) | `/api/ping`, `/api/upload`, static `/speed/chunk-*.bin`; `scripts/generate-speed-chunks`; presets Standard/Fast/Gigabit |
-| 3 | Service Reachability (Feature 5) | Client-side `no-cors`; services from `site.json` |
+| 1 | DNS Resolver (Feature 4 + 20) | **Done** — `/api/dns` DoH proxy; PTR support; DNSSEC `AD` flag |
+| 2 | Speed Test (Feature 3) | **Done** — `/api/ping`, `/api/upload`, static `/speed/chunk-*.bin`; `scripts/generate-speed-chunks`; presets Standard/Fast/Gigabit |
+| 3 | Service Reachability (Feature 5) | **Next** — Client-side `no-cors`; services from `site.json` |
 | 4 | Wire remaining tools | Update `IMPLEMENTED` set in `src/pages/index.astro` |
 
 **MVP exit criteria:** Four sidebar tools (`ip_discovery`, `dns_resolver`, `speed_test`, `service_status`) fully functional on Cloudflare preview. No ComingSoon placeholders for core tools.
@@ -744,7 +763,7 @@ Extend existing panels where possible to avoid sidebar clutter:
 ### Phase 5 — Polish and Growth
 
 - Dual-stack probe (optional client fetch to IPv4/IPv6 check endpoints)
-- `sessionStorage` DNS cache (60s TTL) across all DNS features
+- `sessionStorage` DNS cache (60s TTL) across all DNS features — **done for Feature 4**; extend when propagation/email tools ship
 - Per-feature loading skeletons and error boundaries (match IP page pattern)
 - Feature flag entries for new tools: `browser_info`, `ip_lookup`, `network_calculator`, `whois`
 - API route stubs for Phase 4 endpoints
@@ -757,7 +776,7 @@ Extend existing panels where possible to avoid sidebar clutter:
 |---|---|---|---|---|
 | 1 | IP & ASN Discovery | B+A | 0 | **Complete** |
 | 2 | Geolocation Map | B+A | 0 | **Complete (embedded in Feature 1)** |
-| 3 | Speed Test | B+A | 1 | Planned |
+| 3 | Speed Test | B+A | 1 | **Complete** |
 | 4 | DNS Resolver | B | 1 | **Complete** |
 | 5 | Service Reachability | A | 1 | Planned |
 | 6 | WebRTC Leak Detector | A | 3 | Planned |

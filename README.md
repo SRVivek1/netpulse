@@ -1,43 +1,31 @@
-# Astro Starter Kit: Minimal
+# NetPulse
 
-```sh
-npm create astro@latest -- --template minimal
-```
+All-in-one network intelligence hub — IP & ASN discovery, DNS lookup, speed testing, and more. Built on **Astro 6 SSR + React 19 + TypeScript + Tailwind CSS**, deployed to **Cloudflare Pages** with no traditional backend or database.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Implementation Status
 
-## 🚀 Project Structure
+| MVP Sidebar Tool | Feature ID | Status |
+|------------------|------------|--------|
+| IP & Location | `ip_discovery` | **Shipped** (includes geo map, GPS vs IP, antipode) |
+| DNS Lookup | `dns_resolver` | **Shipped** (includes PTR, DNSSEC, RDAP) |
+| Speed Test | `speed_test` | **Shipped** (ping, download, upload) |
+| Service Status | `service_status` | Planned |
 
-Inside of your Astro project, you'll see the following folders and files:
+**Next up:** Service Reachability (Feature 5) — the final MVP sidebar tool.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## Commands
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+| Command | Action |
+|---------|--------|
+| `npm install` | Install dependencies |
+| `npm run dev` | Start dev server at `localhost:4321` (generates speed chunks on first run) |
+| `npm run build` | Production build to `./dist/` |
+| `npm run preview` | Preview production build locally |
+| `npm run generate-speed-chunks` | Regenerate `public/speed/*.bin` test files |
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Documentation
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- [Developer Guide](docs/developer-guide.md) — local setup and contributing
+- [Architecture Guide](docs/architecture.md) — system design and data flows
+- [Requirement Analysis](prompts/requirement-analysis.md) — full feature roadmap
+- [Cloudflare Deployment](docs/cloudflare-pages-deployment.md) — deploy to Pages
