@@ -95,8 +95,10 @@ All Features 1–22, WHOIS, and weather remain in scope on the free tier. Alread
 | Feature | Status | Key Files |
 |---|---|---|
 | Feature 1 — IP & ASN Discovery | **Complete** | `src/pages/api/ip.ts`, `src/lib/ip.ts`, `src/lib/browser.ts`, `src/components/features/ip/*` |
-| Features 2–13 | Planned / ComingSoon | `src/pages/index.astro` (`IMPLEMENTED` set) |
-| Features 14–22 | Documented, not started | This document |
+| Feature 2 — Geolocation Map (+ 15, 16) | **Complete (embedded in Feature 1)** | `src/components/features/geolocation/GeoMapPanel.tsx` inside `IpDiscovery.tsx` |
+| Feature 4 — DNS Resolver (+ 20 PTR) | **Complete** | `src/pages/api/dns.ts`, `src/lib/dns.ts`, `src/components/features/dns/*` |
+| Features 3, 5–13 | Planned / ComingSoon | `src/pages/index.astro` (`IMPLEMENTED` set) |
+| Features 14–22 | Partial or documented | See Feature Classification Matrix |
 | `/api/ping` | Stub only | `src/pages/api/ping.ts` |
 | `/api/config` | Shipped | `src/pages/api/config.ts` |
 
@@ -154,7 +156,7 @@ All Features 1–22, WHOIS, and weather remain in scope on the free tier. Alread
 
 ### Feature 2 — High-Precision Geolocation Map Module
 
-**Feasibility: HIGH (with caveats)** | **Bucket: B + A** | **Status: Planned**
+**Feasibility: HIGH (with caveats)** | **Bucket: B + A** | **Status: Complete (embedded in Feature 1)**
 
 **Technical Notes:**
 - Leaflet.js with Stadia Maps (`alidade_smooth_dark`) is the primary tile provider — configured in `config/site.json`. 200k tile requests/month free, no API key needed.
@@ -238,7 +240,7 @@ npm run build
 
 ### Feature 4 — Edge-Accelerated DNS Resolver Tool
 
-**Feasibility: HIGH** | **Bucket: B** | **Status: Planned**
+**Feasibility: HIGH** | **Bucket: B** | **Status: Complete**
 
 - Cloudflare Pages Functions proxy to `https://cloudflare-dns.com/dns-query` with `Accept: application/dns-json`. Fallback: Google DoH (`config/site.json` `doh`).
 - Input sanitization: Validate domain names against RFC 1123 regex before forwarding.
@@ -681,19 +683,19 @@ Always use `request.cf` for the current visitor's IP, geo, ASN, and TLS. Externa
 
 ---
 
-### Phase 1 — Original Core Five (MVP Launch)
+### Phase 1 — Core Sidebar Tools (MVP Launch)
 
 Build in dependency order:
 
 | Order | Feature | Endpoints / Notes |
 |---|---|---|
-| 1 | Geolocation Map (Feature 2 + 16) | Reuse `/api/ip`; Leaflet + Stadia tiles; antipode pin |
-| 2 | DNS Resolver (Feature 4 + 20) | `/api/dns` DoH proxy; PTR support; DNSSEC `AD` flag |
-| 3 | Speed Test (Feature 3) | `/api/ping`, `/api/upload`, static `/speed/chunk-*.bin`; `scripts/generate-speed-chunks`; presets Standard/Fast/Gigabit |
-| 4 | Service Reachability (Feature 5) | Client-side `no-cors`; services from `site.json` |
-| 5 | Wire all five | Update `IMPLEMENTED` set in `src/pages/index.astro` |
+| — | Geolocation Map (Feature 2 + 15 + 16) | **Done** — embedded in `ip_discovery` via `GeoMapPanel`; no standalone sidebar panel |
+| 1 | DNS Resolver (Feature 4 + 20) | `/api/dns` DoH proxy; PTR support; DNSSEC `AD` flag |
+| 2 | Speed Test (Feature 3) | `/api/ping`, `/api/upload`, static `/speed/chunk-*.bin`; `scripts/generate-speed-chunks`; presets Standard/Fast/Gigabit |
+| 3 | Service Reachability (Feature 5) | Client-side `no-cors`; services from `site.json` |
+| 4 | Wire remaining tools | Update `IMPLEMENTED` set in `src/pages/index.astro` |
 
-**MVP exit criteria:** Sidebar items 1–5 fully functional on Cloudflare preview. No ComingSoon placeholders for core tools.
+**MVP exit criteria:** Four sidebar tools (`ip_discovery`, `dns_resolver`, `speed_test`, `service_status`) fully functional on Cloudflare preview. No ComingSoon placeholders for core tools.
 
 ---
 
@@ -704,7 +706,7 @@ Extend existing panels where possible to avoid sidebar clutter:
 | Work Item | Where It Lives | Bucket |
 |---|---|---|
 | Browser fingerprint (Feature 14) | IP page advanced panel or `browser_info` sidebar | A |
-| GPS vs IP compare (Feature 15) | Geolocation panel | A+B |
+| GPS vs IP compare (Feature 15) | Embedded in `GeoMapPanel` (IP page) | A+B |
 | IP neighbourhood (Feature 17) | IP hero section | A |
 | Incoming headers (Feature 18) | Extend `/api/ip` + IP advanced panel | B |
 | Proxy header detect (Feature 19) | Extend `/api/ip` + Feature 11 | B |
@@ -754,9 +756,9 @@ Extend existing panels where possible to avoid sidebar clutter:
 | # | Feature | Bucket | Phase | Status |
 |---|---|---|---|---|
 | 1 | IP & ASN Discovery | B+A | 0 | **Complete** |
-| 2 | Geolocation Map | B+A | 1 | Planned |
+| 2 | Geolocation Map | B+A | 0 | **Complete (embedded in Feature 1)** |
 | 3 | Speed Test | B+A | 1 | Planned |
-| 4 | DNS Resolver | B | 1 | Planned |
+| 4 | DNS Resolver | B | 1 | **Complete** |
 | 5 | Service Reachability | A | 1 | Planned |
 | 6 | WebRTC Leak Detector | A | 3 | Planned |
 | 7 | HTTP Security Headers | B | 3 | Planned |
@@ -767,12 +769,12 @@ Extend existing panels where possible to avoid sidebar clutter:
 | 12 | Email Deliverability | B | 3 | Planned |
 | 13 | BGP Route Lookup | C | 4 | Planned |
 | 14 | Browser Fingerprint | A | 2 | **Partial (in Feature 1)** |
-| 15 | GPS vs IP Compare | A+B | 2 | Planned |
-| 16 | Antipode Map Pin | A | 1 | Planned |
+| 15 | GPS vs IP Compare | A+B | 0 | **Complete (embedded in Feature 1)** |
+| 16 | Antipode Map Pin | A | 0 | **Complete (embedded in Feature 1)** |
 | 17 | IP Neighbourhood | A | 2 | **Complete (in Feature 1)** |
 | 18 | Incoming Request Headers | B | 2 | **Complete (in Feature 1)** |
 | 19 | Proxy Header Detector | B | 2 | **Complete (in Feature 1)** |
-| 20 | Reverse DNS (PTR) | B | 1 | Planned |
+| 20 | Reverse DNS (PTR) | B | 1 | **Complete (bundled with Feature 4)** |
 | 21 | Arbitrary IP Lookup | C | 4 | Planned |
 | 22 | Network Calculator | A | 2 | Planned |
 | — | WHOIS / RDAP | C | 4 | Planned |
@@ -788,7 +790,7 @@ Extend existing panels where possible to avoid sidebar clutter:
 
 | Scope | Features | Target |
 |---|---|---|
-| **MVP (Phase 1)** | 1–5 (+16 antipode, +20 PTR) | Public launch; all core sidebar tools live |
+| **MVP (Phase 1)** | 1, 4 (+20 PTR), 3, 5 (geo 2/15/16 embedded in 1) | Public launch; four core sidebar tools live |
 | **Parity (Phase 2)** | 10, 14–19, 22 | InfoByIp homepage parity + network calculator |
 | **Privacy/Dev (Phase 3)** | 6, 7, 11, 12 | VPN users and developers |
 | **Lookup Tools (Phase 4)** | 8, 9, 13, 21, WHOIS, weather | Power users; requires privacy policy |

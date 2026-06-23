@@ -11,6 +11,57 @@ export interface ConnectionRisk {
   reasons: string[];
 }
 
+export interface DnsAnswer {
+  name: string;
+  type: number;
+  typeName: string;
+  ttl: number;
+  data: string;
+}
+
+export interface DnsResult {
+  query: string;
+  type: string;
+  status: number;
+  statusText: string;
+  dnssecAuthenticated: boolean;
+  answers: DnsAnswer[];
+  authority: DnsAnswer[];
+  resolver: 'primary' | 'fallback';
+  servedAt: string;
+}
+
+export interface DnsSection {
+  type: string;
+  status: number;
+  statusText: string;
+  dnssecAuthenticated: boolean;
+  records: DnsAnswer[];
+}
+
+export interface DnsFullResult {
+  query: string;
+  inputKind: 'domain' | 'ip';
+  sections: DnsSection[];
+  resolver: 'primary' | 'fallback';
+  registration?: DomainRegistration;
+  servedAt: string;
+}
+
+export interface DomainRegistration {
+  domain: string;
+  queriedDomain: string;
+  found: boolean;
+  error?: string;
+  registrar?: string;
+  registrant?: string;
+  registrantRedacted?: boolean;
+  status?: string[];
+  registeredAt?: string;
+  expiresAt?: string;
+  updatedAt?: string;
+}
+
 export interface IpData {
   ip: string;
   ipVersion: 'IPv4' | 'IPv6' | 'unknown';

@@ -335,16 +335,18 @@ When implementing one of the planned features (speed test, DNS resolver, etc.), 
 
 | Feature ID | Label | Status |
 |------------|-------|--------|
-| `ip_discovery` | IP Discovery | Implemented |
-| `geolocation_map` | Geolocation Map | Planned |
+| `ip_discovery` | IP & Location | Implemented (includes embedded geolocation map, antipode pin, GPS vs IP) |
+| `dns_resolver` | DNS Lookup | Implemented |
 | `speed_test` | Speed Test | Planned |
-| `dns_resolver` | DNS Resolver | Planned |
 | `service_status` | Service Status | Planned |
-| `webrtc_leak` | WebRTC Leak Test | Beta/Planned |
-| `http_headers` | HTTP Headers | Beta/Planned |
-| `traceroute` | Traceroute | Disabled (beta) |
-| `port_scanner` | Port Scanner | Disabled (beta) |
-| `whois_lookup` | WHOIS Lookup | Disabled (beta) |
+| `webrtc_leak` | WebRTC Leak | Beta / Planned |
+| `http_headers` | HTTP Headers | Beta / Planned |
+| `dns_propagation` | DNS Propagation | Disabled (beta) |
+| `ssl_cert` | SSL / TLS | Disabled (beta) |
+| `email_deliverability` | Email / MX | Disabled (beta) |
+| `bgp_route` | BGP Route | Disabled (beta) |
+
+> **Note:** Geolocation map (Feature 2), antipode pin (Feature 16), and GPS vs IP compare (Feature 15) ship inside the `ip_discovery` panel — there is no standalone `geolocation_map` sidebar item.
 
 ---
 

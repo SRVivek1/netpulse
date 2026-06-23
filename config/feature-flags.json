@@ -8,13 +8,6 @@
       "label": "IP & Location",
       "icon": "globe"
     },
-    "geolocation_map": {
-      "enabled": false,
-      "beta": false,
-      "order": 2,
-      "label": "Geolocation",
-      "icon": "map-pin"
-    },
     "speed_test": {
       "enabled": true,
       "beta": false,
