@@ -52,18 +52,19 @@ export function ThemeSelector() {
         aria-expanded={open}
         aria-label={`Theme: ${active.name}`}
         className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-full text-[0.7rem]',
-          'font-mono bg-elevated border border-np cursor-pointer',
-          'text-np-muted hover:text-np transition-colors',
+          'flex items-center gap-2 px-3 py-2.5 min-h-[2.5rem] rounded-full',
+          'bg-elevated border border-np cursor-pointer',
+          'text-np-muted hover:text-np hover:bg-hover transition-colors',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--np-accent)]/40',
         )}
       >
         <span
-          className="size-[10px] rounded-full shrink-0"
+          className="size-[14px] rounded-full shrink-0"
           style={{ backgroundColor: active.swatch }}
           aria-hidden="true"
         />
         <ChevronDown
-          size={12}
+          size={16}
           className={cn('shrink-0 transition-transform duration-150', open && 'rotate-180')}
           aria-hidden="true"
         />
@@ -92,7 +93,7 @@ export function ThemeSelector() {
                 aria-selected={selected}
                 onClick={() => selectTheme(theme.id)}
                 className={cn(
-                  'w-full flex items-center gap-2.5 px-3 py-2 text-left text-[0.82rem]',
+                  'w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[0.82rem]',
                   'border-0 cursor-pointer transition-colors',
                   selected
                     ? 'bg-[var(--np-accent)]/10 text-np'
@@ -100,13 +101,13 @@ export function ThemeSelector() {
                 )}
               >
                 <span
-                  className="size-[10px] rounded-full shrink-0"
+                  className="size-[12px] rounded-full shrink-0"
                   style={{ backgroundColor: theme.swatch }}
                   aria-hidden="true"
                 />
                 <span className="flex-1">{theme.name}</span>
                 {selected && (
-                  <Check size={14} className="text-[#8b5cf6] shrink-0" strokeWidth={2.5} aria-hidden="true" />
+                  <Check size={16} className="text-[var(--np-accent)] shrink-0" strokeWidth={2.5} aria-hidden="true" />
                 )}
               </button>
             );

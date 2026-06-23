@@ -40,6 +40,8 @@
   --np-map-bg:       #0f1118;
   --np-scrollbar:    rgba(255, 255, 255, 0.15);
   --np-on-accent:    #0a0c0f;
+  --np-bg-glow-1:    color-mix(in srgb, var(--np-accent) 8%, transparent);
+  --np-bg-glow-2:    color-mix(in srgb, var(--np-accent) 4%, transparent);
 }
 
 /* ── Theme: Light ───────────────────────────────────────────────── */
@@ -70,6 +72,8 @@
   --np-map-bg:       #e8eaed;
   --np-scrollbar:    rgba(0, 0, 0, 0.15);
   --np-on-accent:    #ffffff;
+  --np-bg-glow-1:    color-mix(in srgb, var(--np-accent) 4%, transparent);
+  --np-bg-glow-2:    color-mix(in srgb, var(--np-accent) 2%, transparent);
 }
 
 /* ── Theme: Ocean ───────────────────────────────────────────────── */
@@ -100,6 +104,8 @@
   --np-map-bg:       #0c1219;
   --np-scrollbar:    rgba(255, 255, 255, 0.15);
   --np-on-accent:    #0a0e14;
+  --np-bg-glow-1:    color-mix(in srgb, var(--np-accent) 8%, transparent);
+  --np-bg-glow-2:    color-mix(in srgb, var(--np-accent) 4%, transparent);
 }
 
 /* ── Theme: Forest ──────────────────────────────────────────────── */
@@ -130,6 +136,8 @@
   --np-map-bg:       #0e1510;
   --np-scrollbar:    rgba(255, 255, 255, 0.15);
   --np-on-accent:    #0a100c;
+  --np-bg-glow-1:    color-mix(in srgb, var(--np-accent) 8%, transparent);
+  --np-bg-glow-2:    color-mix(in srgb, var(--np-accent) 4%, transparent);
 }
 
 /* ── Theme: Sunset ──────────────────────────────────────────────── */
@@ -160,6 +168,8 @@
   --np-map-bg:       #15100e;
   --np-scrollbar:    rgba(255, 255, 255, 0.15);
   --np-on-accent:    #100c0a;
+  --np-bg-glow-1:    color-mix(in srgb, var(--np-accent) 8%, transparent);
+  --np-bg-glow-2:    color-mix(in srgb, var(--np-accent) 4%, transparent);
 }
 
 /* ── Theme: Rose ────────────────────────────────────────────────── */
@@ -190,6 +200,8 @@
   --np-map-bg:       #150e12;
   --np-scrollbar:    rgba(255, 255, 255, 0.15);
   --np-on-accent:    #100a0c;
+  --np-bg-glow-1:    color-mix(in srgb, var(--np-accent) 8%, transparent);
+  --np-bg-glow-2:    color-mix(in srgb, var(--np-accent) 4%, transparent);
 }
 
 html { -webkit-font-smoothing: antialiased; }
@@ -249,12 +261,17 @@ body {
 }
 .pulse-dot { animation: pulseDot 2.5s ease-in-out infinite; }
 
-/* ── Subtle grid background ─────────────────────────────────────── */
-.bg-grid {
+/* ── Page background (ambient glow + grid) ─────────────────────── */
+.np-page-bg {
+  background-color: var(--np-bg-base);
   background-image:
+    radial-gradient(ellipse 70% 55% at 5% -5%, var(--np-bg-glow-1), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 95% 105%, var(--np-bg-glow-2), transparent 50%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 40%, color-mix(in srgb, var(--np-bg-base) 85%, black) 100%),
     linear-gradient(var(--np-grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--np-grid-line) 1px, transparent 1px);
-  background-size: 32px 32px;
+  background-size: auto, auto, auto, 48px 48px, 48px 48px;
+  background-attachment: local;
 }
 
 /* ── Font utilities (Tailwind v3 doesn't ship these by default) ─── */
