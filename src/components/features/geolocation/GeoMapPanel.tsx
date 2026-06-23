@@ -15,6 +15,12 @@ import { CopyButton } from '../../ui/CopyButton';
 
 const FALLBACK_PROVIDER = 'carto';
 
+const GPS_OPTIONS: PositionOptions = {
+  enableHighAccuracy: true,
+  timeout: 15_000,
+  maximumAge: 60_000,
+};
+
 function LegendItem({ colorClass, label }: { colorClass: string; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-[0.72rem] text-np-muted">
@@ -72,6 +78,7 @@ export function GeoMapPanel({ ipData, appConfig, className, style, compact = fal
   const leafletRef = useRef<typeof import('leaflet').default | null>(null);
   const usingFallbackTilesRef = useRef(false);
   const tileErrorCountRef = useRef(0);
+  const skipNextAutoFitRef = useRef(false);
   const appConfigRef = useRef(appConfig);
   appConfigRef.current = appConfig;
 
@@ -113,8 +120,21 @@ export function GeoMapPanel({ ipData, appConfig, className, style, compact = fal
     ipData.timezone && browserTimezone && ipData.timezone !== browserTimezone,
   );
 
-  const requestGps = () => {
+  const handleGpsError = useCallback((err: GeolocationPositionError) => {
+    skipNextAutoFitRef.current = false;
+    setGpsStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'error');
+    setGpsMessage(
+      err.code === err.PERMISSION_DENIED
+        ? 'Location permission denied — showing IP-based location only.'
+        : err.message || 'Could not read GPS position.',
+    );
+  }, []);
+
+  const fetchGps = useCallback((
+    onSuccess: (coords: LatLon) => void,
+  ) => {
     if (!navigator.geolocation) {
+      skipNextAutoFitRef.current = false;
       setGpsStatus('error');
       setGpsMessage('Geolocation is not supported in this browser.');
       return;
@@ -123,20 +143,40 @@ export function GeoMapPanel({ ipData, appConfig, className, style, compact = fal
     setGpsMessage(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setGps({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+        const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        setGps(coords);
         setGpsStatus('idle');
+        onSuccess(coords);
       },
-      (err) => {
-        setGpsStatus(err.code === err.PERMISSION_DENIED ? 'denied' : 'error');
-        setGpsMessage(
-          err.code === err.PERMISSION_DENIED
-            ? 'Location permission denied — showing IP-based location only.'
-            : err.message || 'Could not read GPS position.',
-        );
-      },
-      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 },
+      handleGpsError,
+      GPS_OPTIONS,
     );
+  }, [handleGpsError]);
+
+  const requestGps = () => {
+    fetchGps(() => {});
   };
+
+  const zoomToPosition = useCallback((pos: LatLon) => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.invalidateSize();
+    map.setView([pos.lat, pos.lon], map.getMaxZoom());
+  }, []);
+
+  const zoomToMyLocation = useCallback(() => {
+    if (!mapRef.current || !mapReady) return;
+
+    if (gps) {
+      zoomToPosition(gps);
+      return;
+    }
+
+    skipNextAutoFitRef.current = true;
+    fetchGps((coords) => {
+      requestAnimationFrame(() => zoomToPosition(coords));
+    });
+  }, [gps, mapReady, fetchGps, zoomToPosition]);
 
   const swapToFallbackTiles = useCallback((
     L: typeof import('leaflet').default,
@@ -171,6 +211,7 @@ export function GeoMapPanel({ ipData, appConfig, className, style, compact = fal
     ip: LatLon | null,
     anti: LatLon | null,
     gpsPos: LatLon | null,
+    options?: { fitView?: boolean },
   ) => {
     if (markersLayerRef.current) {
       map.removeLayer(markersLayerRef.current);
@@ -200,10 +241,16 @@ export function GeoMapPanel({ ipData, appConfig, className, style, compact = fal
     group.addTo(map);
     markersLayerRef.current = group;
 
-    if (bounds.length === 1) {
-      map.setView(bounds[0]!, 10);
-    } else if (bounds.length > 1) {
-      map.fitBounds(L.latLngBounds(bounds), { padding: [48, 48], maxZoom: 12 });
+    const shouldFit = options?.fitView !== false && !skipNextAutoFitRef.current;
+    if (skipNextAutoFitRef.current) {
+      skipNextAutoFitRef.current = false;
+    }
+    if (shouldFit) {
+      if (bounds.length === 1) {
+        map.setView(bounds[0]!, 10);
+      } else if (bounds.length > 1) {
+        map.fitBounds(L.latLngBounds(bounds), { padding: [48, 48], maxZoom: 12 });
+      }
     }
   }, []);
 
@@ -339,6 +386,22 @@ export function GeoMapPanel({ ipData, appConfig, className, style, compact = fal
             <div className="absolute inset-1 flex items-center justify-center bg-[var(--np-map-bg)]/80 rounded-lg pointer-events-none">
               <RefreshCw size={20} className="text-np-faint animate-spin" />
             </div>
+          )}
+          {mapReady && (
+            <button
+              type="button"
+              className="geo-map-locate-btn"
+              onClick={zoomToMyLocation}
+              disabled={gpsStatus === 'loading'}
+              aria-label="Zoom to my location"
+              title="Zoom to my location"
+            >
+              {gpsStatus === 'loading' ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : (
+                <LocateFixed size={16} />
+              )}
+            </button>
           )}
           <div className="flex flex-wrap gap-4 mt-3 px-3 pb-2">
             <LegendItem colorClass="bg-violet-500" label="IP geolocation" />

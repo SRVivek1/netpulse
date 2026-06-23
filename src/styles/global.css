@@ -438,6 +438,31 @@ body {
 .geo-marker-ip { background: #8b5cf6; color: #8b5cf6; }
 .geo-marker-antipode { background: #f59e0b; color: #f59e0b; }
 .geo-marker-gps { background: #34d399; color: #34d399; }
+.geo-map-locate-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--np-bg-elevated) 92%, transparent);
+  color: var(--np-text-muted);
+  border: 1px solid var(--np-border-strong);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.geo-map-locate-btn:hover:not(:disabled) {
+  background: var(--np-bg-hover);
+  color: var(--np-text);
+}
+.geo-map-locate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Bento grid system ─────────────────────────────────────────── */
 .bento-grid {
