@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search, AlertTriangle, ShieldCheck, ShieldOff, RefreshCw } from 'lucide-react';
 import type { DnsFullResult, DomainRegistration } from '../../../types/api';
-import { detectInputKind } from '../../../lib/dns';
+import { detectInputKind, getDnsRecordTypeInfo } from '../../../lib/dns';
 import { fetchWithTimeout } from '../../../lib/utils';
 import { Card, CardBody, CardHeader } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
@@ -52,10 +52,16 @@ function formatDate(iso: string | undefined): string | null {
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-function RegistrationCard({ registration }: { registration: DomainRegistration }) {
+function RegistrationCard({
+  registration,
+  className,
+}: {
+  registration: DomainRegistration;
+  className?: string;
+}) {
   if (!registration.found) {
     return (
-      <Card>
+      <Card className={className}>
         <CardHeader>Domain registration</CardHeader>
         <CardBody>
           <p className="px-4 py-5 text-[0.84rem] text-np-muted text-center">
@@ -71,7 +77,7 @@ function RegistrationCard({ registration }: { registration: DomainRegistration }
   const updated = formatDate(registration.updatedAt);
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader>Domain registration</CardHeader>
       <CardBody>
         {registration.queriedDomain !== registration.domain && (
@@ -203,7 +209,10 @@ export default function DnsResolver() {
       <div>
         <h1 className="font-display font-bold text-2xl text-np tracking-tight">DNS Lookup</h1>
         <p className="text-np-muted text-[0.88rem] mt-1">
-          Look up DNS records and domain registration info — A, AAAA, MX, TXT, CNAME, NS, and SOA. IP addresses return reverse DNS (PTR).
+          See how a domain is configured — where it points on the web, which servers handle email, and who registered it. Enter a domain name, or an IP address to look up its hostname.
+        </p>
+        <p className="text-[0.75rem] font-mono text-np-faint mt-1.5 leading-relaxed">
+          Record types: A, AAAA, MX, TXT, CNAME, NS, SOA · PTR for reverse DNS · DoH resolver · RDAP registration
         </p>
       </div>
 
@@ -274,71 +283,87 @@ export default function DnsResolver() {
             )}
           </div>
 
-          <Card>
-            <CardHeader>Summary</CardHeader>
-            <CardBody>
-              <DataRow
-                label="Name"
-                mono
-                value={
-                  <span className="flex items-center gap-1.5">
-                    {result.query}
-                    <CopyButton text={result.query} />
-                  </span>
-                }
-              />
-              <DataRow
-                label="Input"
-                value={result.inputKind === 'ip' ? 'IP address (reverse DNS)' : 'Domain name'}
-              />
-              <DataRow
-                label="Resolver"
-                value={result.resolver === 'primary' ? 'Cloudflare DoH' : 'Google DoH (fallback)'}
-              />
-            </CardBody>
-          </Card>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+              <Card className="h-full">
+                <CardHeader>Summary</CardHeader>
+                <CardBody>
+                  <DataRow
+                    label="Name"
+                    mono
+                    value={
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        <span className="truncate">{result.query}</span>
+                        <CopyButton text={result.query} />
+                      </span>
+                    }
+                  />
+                  <DataRow
+                    label="Input"
+                    value={result.inputKind === 'ip' ? 'IP address (reverse DNS)' : 'Domain name'}
+                  />
+                  <DataRow
+                    label="Resolver"
+                    value={result.resolver === 'primary' ? 'Cloudflare DoH' : 'Google DoH (fallback)'}
+                  />
+                </CardBody>
+              </Card>
 
-          {result.registration && (
-            <RegistrationCard registration={result.registration} />
-          )}
+              {result.registration && (
+                <RegistrationCard registration={result.registration} className="h-full" />
+              )}
+            </div>
 
-          {result.sections.map((section) => (
-            <Card key={section.type}>
-              <CardHeader className="justify-between">
-                <span>{section.type}</span>
-                <Badge variant={section.records.length > 0 ? 'green' : 'slate'}>
-                  {section.records.length}
-                </Badge>
-              </CardHeader>
-              <CardBody>
-                {section.records.length === 0 ? (
-                  <p className="px-4 py-5 text-[0.84rem] text-np-muted text-center">
-                    No {section.type} records found
-                  </p>
-                ) : (
-                  section.records.map((record, index) => (
-                    <DataRow
-                      key={`${record.name}-${record.type}-${index}`}
-                      label={`${record.name} · TTL ${record.ttl}s`}
-                      mono
-                      value={
-                        <span
-                          className={
-                            section.type === 'A' || section.type === 'AAAA'
-                              ? 'flex items-center gap-1.5 whitespace-nowrap'
-                              : 'flex items-center gap-1.5 min-w-0 break-all'
+            {result.sections.map((section) => {
+              const typeInfo = getDnsRecordTypeInfo(section.type);
+
+              return (
+                <Card key={section.type}>
+                  <CardHeader className="justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="font-mono">{section.type}</span>
+                      <span className="normal-case tracking-normal text-np-muted font-normal">
+                        {' · '}{typeInfo.label}
+                      </span>
+                    </span>
+                    <Badge variant={section.records.length > 0 ? 'green' : 'slate'}>
+                      {section.records.length}
+                    </Badge>
+                  </CardHeader>
+                  <CardBody>
+                    <p className="px-4 py-3 text-[0.8rem] leading-relaxed text-np-muted border-b border-np">
+                      {typeInfo.description}
+                    </p>
+                    {section.records.length === 0 ? (
+                      <p className="px-4 py-5 text-[0.84rem] text-np-muted text-center">
+                        No {section.type} records found
+                      </p>
+                    ) : (
+                      section.records.map((record, index) => (
+                        <DataRow
+                          key={`${record.name}-${record.type}-${index}`}
+                          label={`${record.name} · TTL ${record.ttl}s`}
+                          mono
+                          value={
+                            <span
+                              className={
+                                section.type === 'A' || section.type === 'AAAA'
+                                  ? 'flex items-center gap-1.5 whitespace-nowrap'
+                                  : 'flex items-center gap-1.5 min-w-0 break-all'
+                              }
+                            >
+                              {record.data}
+                              <CopyButton text={record.data} />
+                            </span>
                           }
-                        >
-                          {record.data}
-                          <CopyButton text={record.data} />
-                        </span>
-                      }
-                    />
-                  ))
-                )}
-              </CardBody>
-            </Card>
-          ))}
+                        />
+                      ))
+                    )}
+                  </CardBody>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

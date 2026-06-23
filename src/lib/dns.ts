@@ -2,6 +2,55 @@
 export const DNS_RECORD_TYPES = ['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS', 'SOA', 'PTR'] as const;
 export type DnsRecordType = (typeof DNS_RECORD_TYPES)[number];
 
+export interface DnsRecordTypeInfo {
+  label: string;
+  description: string;
+}
+
+/** Plain-language names and usage notes for each record type. */
+export const DNS_RECORD_TYPE_INFO: Record<DnsRecordType, DnsRecordTypeInfo> = {
+  A: {
+    label: 'IPv4 address',
+    description: 'Maps your domain to the server that hosts your website or app using an IPv4 address (for example, 192.0.2.1).',
+  },
+  AAAA: {
+    label: 'IPv6 address',
+    description: 'Same role as an A record, but points to an IPv6 address — the newer, longer address format used on modern networks.',
+  },
+  MX: {
+    label: 'Mail server',
+    description: 'Tells email systems which servers should receive mail sent to addresses at your domain.',
+  },
+  TXT: {
+    label: 'Text record',
+    description: 'Stores short text values used for email security (SPF, DKIM, DMARC), domain ownership verification, and other service settings.',
+  },
+  CNAME: {
+    label: 'Alias',
+    description: 'Points one hostname to another so you can reuse an existing destination — for example, sending www to your main site host.',
+  },
+  NS: {
+    label: 'Name server',
+    description: 'Lists the DNS servers that are authoritative for your domain and answer lookups on its behalf.',
+  },
+  SOA: {
+    label: 'Zone authority',
+    description: 'Holds administrative details about your DNS zone, such as the primary name server and how often secondary servers should refresh.',
+  },
+  PTR: {
+    label: 'Reverse DNS',
+    description: 'Maps an IP address back to a hostname. Often used for reverse lookups, logging, and email deliverability checks.',
+  },
+};
+
+export function getDnsRecordTypeInfo(type: string): DnsRecordTypeInfo {
+  if (isDnsRecordType(type)) return DNS_RECORD_TYPE_INFO[type];
+  return {
+    label: type,
+    description: 'DNS record associated with this domain or IP address.',
+  };
+}
+
 /** Record types queried for a full domain lookup. */
 export const DOMAIN_RECORD_TYPES = ['A', 'AAAA', 'MX', 'TXT', 'CNAME', 'NS', 'SOA'] as const satisfies readonly DnsRecordType[];
 
