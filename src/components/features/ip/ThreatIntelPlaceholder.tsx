@@ -1,13 +1,15 @@
+import { getWebsiteCore } from '../../../lib/config';
 import { BentoTile } from '../../ui/BentoTile';
+
+const tiles = getWebsiteCore().ipDiscovery.tiles;
 
 const PROVIDERS = ['SPAMHAUS', 'ABUSEIPDB', 'BARRACUDA', 'SAFE BROWSING'] as const;
 
 export function ThreatIntelPlaceholder() {
   return (
     <BentoTile
-      title="Global reputation blacklist"
+      title={tiles.threatIntel.title}
       badge="RBL"
-      numbered="05 /"
       colSpan={12}
       mdColSpan={6}
       footer="Threat intel APIs — coming soon"

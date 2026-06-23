@@ -2,8 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Globe, Zap, Search, Shield, RefreshCw,
-  ChevronDown, ArrowRight, AlertTriangle, Info,
-  Lock, Wifi, Server,
+  ArrowRight, AlertTriangle, Info,
 } from 'lucide-react';
 import type { ConnectionRisk, IpData } from '../../../types/api';
 import type { AppConfig } from '../../../types/config';
@@ -16,6 +15,7 @@ import { countryFlag, continentName, fetchWithTimeout, formatCoords, formatLocat
 import { isLikelyDatacenter, withTimezoneMismatch } from '../../../lib/ip';
 import { collectBrowserFingerprint, type BrowserFingerprint } from '../../../lib/browser';
 import { navigateToFeature } from '../../../lib/navigation';
+import { getWebsiteCore } from '../../../lib/config';
 import { GeoMapPanel } from '../geolocation/GeoMapPanel';
 import { ConnectionRiskBadge } from './ConnectionRiskBadge';
 import { IpNeighbourhood } from './IpNeighbourhood';
@@ -23,6 +23,10 @@ import { RequestHeadersPanel } from './RequestHeadersPanel';
 import { BrowserFingerprintPanel } from './BrowserFingerprintPanel';
 import { LatencyTile } from './LatencyTile';
 import { ThreatIntelPlaceholder } from './ThreatIntelPlaceholder';
+
+const { ipDiscovery: ipDiscoveryCopy } = getWebsiteCore();
+const tiles = ipDiscoveryCopy.tiles;
+const sections = ipDiscoveryCopy.sections;
 
 function IpSkeleton() {
   return (
@@ -64,6 +68,26 @@ function IpSkeleton() {
           </div>
         </div>
       </BentoGrid>
+
+      <div className="mb-6 space-y-3">
+        <div className="skeleton h-4 w-32 rounded" />
+        <BentoGrid>
+          <div className="bento-tile np-card p-5 lg:col-span-4 md:col-span-2">
+            <div className="skeleton h-3 w-24 mb-4 rounded" />
+            <div className="skeleton h-4 w-32 mb-2 rounded" />
+            <div className="skeleton h-4 w-28 mb-2 rounded" />
+            <div className="skeleton h-4 w-24 rounded" />
+          </div>
+          <div className="bento-tile np-card p-5 lg:col-span-8 md:col-span-4">
+            <div className="skeleton h-3 w-28 mb-4 rounded" />
+            <div className="skeleton h-48 w-full rounded-xl" />
+          </div>
+          <div className="bento-tile np-card p-5 lg:col-span-12 md:col-span-6">
+            <div className="skeleton h-3 w-32 mb-4 rounded" />
+            <div className="skeleton h-40 w-full rounded-xl" />
+          </div>
+        </BentoGrid>
+      </div>
     </div>
   );
 }
@@ -105,15 +129,6 @@ function ToolCta({ tool }: { tool: typeof TOOLS[number] }) {
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-2.5 border-b border-np last:border-0">
-      <span className="text-[0.76rem] text-np-faint shrink-0">{label}</span>
-      <span className="text-[0.78rem] font-mono text-np text-right">{value ?? '—'}</span>
-    </div>
-  );
-}
-
 function protoBadgeVariant(proto: string | null) {
   if (!proto) return 'slate' as const;
   if (proto.includes('3')) return 'orange' as const;
@@ -140,7 +155,6 @@ export default function IpDiscovery() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [fingerprint, setFingerprint] = useState<BrowserFingerprint | null>(null);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const load = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -204,7 +218,7 @@ export default function IpDiscovery() {
       <BentoGrid className="mb-5">
         {/* Row 1: IP + Latency */}
         <BentoTile
-          title="Target vector host"
+          title={tiles.ipAddress.title}
           colSpan={7}
           mdColSpan={6}
           glass
@@ -254,9 +268,8 @@ export default function IpDiscovery() {
 
         {/* Row 2: GEO / BGP / STACK */}
         <BentoTile
-          title="Geo target location"
+          title={tiles.location.title}
           badge="GEO"
-          numbered="01 /"
           colSpan={4}
           mdColSpan={2}
           footer="Accuracy: city-level (~50–200 km)"
@@ -277,9 +290,8 @@ export default function IpDiscovery() {
         </BentoTile>
 
         <BentoTile
-          title="BGP transit autonomous"
+          title={tiles.network.title}
           badge="BGP"
-          numbered="02 /"
           colSpan={4}
           mdColSpan={2}
           footer={`Peering layer: ${data.colo ?? 'edge'}`}
@@ -293,9 +305,8 @@ export default function IpDiscovery() {
         </BentoTile>
 
         <BentoTile
-          title="Dual-stack interface"
+          title={tiles.protocol.title}
           badge="STACK"
-          numbered="03 /"
           colSpan={4}
           mdColSpan={2}
           footer="MTU interface: 1500 bytes"
@@ -318,7 +329,7 @@ export default function IpDiscovery() {
 
         {/* Row 3: Map + Security */}
         <BentoTile
-          title="Geolocation map"
+          title={tiles.map.title}
           badge="MAP"
           colSpan={8}
           mdColSpan={6}
@@ -329,9 +340,8 @@ export default function IpDiscovery() {
         </BentoTile>
 
         <BentoTile
-          title="Privacy gateway seal"
+          title={tiles.privacy.title}
           badge="WALL"
-          numbered="04 /"
           colSpan={4}
           mdColSpan={3}
           footer="Header inspection verified"
@@ -384,7 +394,7 @@ export default function IpDiscovery() {
       {/* Tool CTAs */}
       <div className="mb-6 animate-fade-up" style={{ '--delay': '0.14s' } as React.CSSProperties}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display font-semibold text-[0.95rem] text-np">Explore your connection</h2>
+          <h2 className="font-display font-semibold text-[0.95rem] text-np">{sections.exploreConnection}</h2>
           <button
             onClick={() => navigateToFeature('service_status')}
             className="text-[0.72rem] text-accent/70 hover:text-accent transition-colors border-0 bg-transparent cursor-pointer flex items-center gap-1"
@@ -397,55 +407,54 @@ export default function IpDiscovery() {
         </div>
       </div>
 
-      {/* Advanced */}
-      <div className="animate-fade-up" style={{ '--delay': '0.18s' } as React.CSSProperties}>
-        <button
-          onClick={() => setAdvancedOpen((o) => !o)}
-          className="w-full flex items-center justify-between px-4 py-3 np-card hover:bg-hover transition-colors cursor-pointer"
-        >
-          <span className="text-[0.82rem] font-medium text-np-muted flex items-center gap-2">
-            <Lock size={13} className="text-np-faint" />
-            Advanced details
-          </span>
-          <ChevronDown size={16} className={`text-np-faint transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        {advancedOpen && (
-          <div className="mt-2 np-card overflow-hidden animate-fade-up">
-            <div className="px-4 py-3 border-b border-np">
-              <p className="text-[0.68rem] uppercase tracking-wider text-np-faint font-semibold flex items-center gap-1.5">
-                <Wifi size={12} /> Connection
-              </p>
-            </div>
-            <div className="px-4 py-1">
-              <DetailRow label="TLS cipher" value={data.tlsCipher} />
-              <DetailRow label="HTTP priority" value={data.requestPriority} />
-              <DetailRow label="Region code" value={data.regionCode} />
-              <DetailRow label="Encodings" value={data.clientAcceptEncoding} />
-              {data.proxy.chain.length > 0 && (
-                <DetailRow label="IP chain" value={data.proxy.chain.join(' → ')} />
-              )}
-            </div>
-
-            <div className="px-4 py-3 border-t border-b border-np">
-              <p className="text-[0.68rem] uppercase tracking-wider text-np-faint font-semibold flex items-center gap-1.5">
-                <Server size={12} /> Request headers
-              </p>
-            </div>
-            <RequestHeadersPanel headers={data.headers} />
-
-            {fingerprint && (
-              <>
-                <div className="px-4 py-3 border-t border-b border-np">
-                  <p className="text-[0.68rem] uppercase tracking-wider text-np-faint font-semibold">
-                    Browser fingerprint
-                  </p>
-                </div>
-                <BrowserFingerprintPanel fingerprint={fingerprint} ipTimezone={data.timezone} />
-              </>
+      {/* Advanced details */}
+      <div className="mb-6 animate-fade-up" style={{ '--delay': '0.16s' } as React.CSSProperties}>
+        <h2 className="font-display font-semibold text-[0.95rem] text-np mb-3">{sections.advancedDetails}</h2>
+        <BentoGrid>
+          <BentoTile
+            title={tiles.edgeProfile.title}
+            badge="EDGE"
+            colSpan={4}
+            mdColSpan={2}
+            footer="TLS & transport metadata"
+            className="animate-fade-up"
+            style={{ '--delay': '0.17s' } as React.CSSProperties}
+          >
+            <DataField label="TLS cipher" value={data.tlsCipher} mono />
+            <DataField label="HTTP priority" value={data.requestPriority} mono />
+            <DataField label="Region code" value={data.regionCode} mono />
+            <DataField label="Encodings" value={data.clientAcceptEncoding} mono />
+            {data.proxy.chain.length > 0 && (
+              <DataField label="IP chain" value={data.proxy.chain.join(' → ')} mono />
             )}
-          </div>
-        )}
+          </BentoTile>
+
+          <BentoTile
+            title={tiles.headers.title}
+            badge="HDR"
+            colSpan={8}
+            mdColSpan={4}
+            footer={`${Object.keys(data.headers).length} headers captured`}
+            className="animate-fade-up"
+            style={{ '--delay': '0.18s' } as React.CSSProperties}
+          >
+            <RequestHeadersPanel headers={data.headers} embedded />
+          </BentoTile>
+
+          {fingerprint && (
+            <BentoTile
+              title={tiles.fingerprint.title}
+              badge="FP"
+              colSpan={12}
+              mdColSpan={6}
+              footer="Client-side signals · no data sent to server"
+              className="animate-fade-up"
+              style={{ '--delay': '0.19s' } as React.CSSProperties}
+            >
+              <BrowserFingerprintPanel fingerprint={fingerprint} ipTimezone={data.timezone} embedded />
+            </BentoTile>
+          )}
+        </BentoGrid>
       </div>
 
       <p className="mt-6 text-center text-[0.65rem] font-mono text-np-faint">

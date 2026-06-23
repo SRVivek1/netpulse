@@ -1,7 +1,10 @@
 'use client';
 import { useMemo } from 'react';
 import { cn } from '../../../lib/utils';
+import { getWebsiteCore } from '../../../lib/config';
 import { BentoTile } from '../../ui/BentoTile';
+
+const tiles = getWebsiteCore().ipDiscovery.tiles;
 
 interface LatencyTileProps {
   rttMs: number | null;
@@ -32,7 +35,7 @@ export function LatencyTile({ rttMs, className, style }: LatencyTileProps) {
 
   return (
     <BentoTile
-      title="Ping jitter profile"
+      title={tiles.latency.title}
       badge="PING"
       colSpan={5}
       mdColSpan={3}

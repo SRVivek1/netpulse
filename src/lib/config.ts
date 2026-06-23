@@ -1,9 +1,11 @@
-import type { SiteConfig, FeatureFlags, AppConfig } from '../types/config';
+import type { SiteConfig, FeatureFlags, AppConfig, WebsiteCoreConfig } from '../types/config';
 import rawSite from '../../config/site.json';
 import rawFlags from '../../config/feature-flags.json';
+import rawWebsiteCore from '../../config/website-core.json';
 
 const site = rawSite as SiteConfig;
 const flags = rawFlags as FeatureFlags;
+const websiteCore = rawWebsiteCore as WebsiteCoreConfig;
 
 /**
  * Returns the full site config — only call server-side (Astro frontmatter
@@ -15,6 +17,10 @@ export function getSiteConfig(): SiteConfig {
 
 export function getFeatureFlags(): FeatureFlags {
   return flags;
+}
+
+export function getWebsiteCore(): WebsiteCoreConfig {
+  return websiteCore;
 }
 
 /**

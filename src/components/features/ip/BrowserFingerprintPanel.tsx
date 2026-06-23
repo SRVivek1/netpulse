@@ -27,15 +27,17 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 interface Props {
   fingerprint: BrowserFingerprint;
   ipTimezone: string | null;
+  embedded?: boolean;
 }
 
-export function BrowserFingerprintPanel({ fingerprint, ipTimezone }: Props) {
+export function BrowserFingerprintPanel({ fingerprint, ipTimezone, embedded = false }: Props) {
   const { userAgent: ua, capabilities: cap, webgl, battery } = fingerprint;
   const tzMismatch = ipTimezone && fingerprint.timezone !== ipTimezone;
+  const sectionPad = embedded ? '' : 'px-4';
 
   return (
     <div>
-      <div className="px-4 py-1">
+      <div className={`${sectionPad} py-1`}>
         <Row label="Browser" value={ua.browser} />
         <Row label="OS" value={ua.os} />
         <Row
@@ -64,10 +66,10 @@ export function BrowserFingerprintPanel({ fingerprint, ipTimezone }: Props) {
 
       {webgl && (
         <>
-          <div className="px-4 py-3 border-t border-np">
+          <div className={`${sectionPad} py-3 border-t border-np`}>
             <p className="text-[0.68rem] uppercase tracking-wider text-np-faint font-semibold">WebGL / GPU</p>
           </div>
-          <div className="px-4 py-1">
+          <div className={`${sectionPad} py-1`}>
             <Row label="Vendor" value={webgl.vendor} />
             <Row label="Renderer" value={webgl.renderer} />
             <Row label="Version" value={webgl.version} />
@@ -76,7 +78,7 @@ export function BrowserFingerprintPanel({ fingerprint, ipTimezone }: Props) {
       )}
 
       {battery && (
-        <div className="px-4 py-1 border-t border-np">
+        <div className={`${sectionPad} py-1 border-t border-np`}>
           <Row
             label="Battery"
             value={`${battery.level ?? '—'}%${battery.charging ? ' (charging)' : ''}`}
@@ -84,7 +86,7 @@ export function BrowserFingerprintPanel({ fingerprint, ipTimezone }: Props) {
         </div>
       )}
 
-      <div className="px-4 py-3 border-t border-np">
+      <div className={`${sectionPad} py-3 border-t border-np`}>
         <p className="text-[0.68rem] uppercase tracking-wider text-np-faint font-semibold mb-2.5">
           Browser capabilities
         </p>

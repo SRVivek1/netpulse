@@ -73,3 +73,10 @@ export type AppConfig = Pick<SiteConfig,
   analytics: Omit<SiteConfig['analytics'], 'token'>;
   features: Record<string, FeatureFlag>;
 };
+
+export interface WebsiteCoreConfig {
+  ipDiscovery: {
+    sections: { exploreConnection: string; advancedDetails: string };
+    tiles: Record<string, { title: string }>;
+  };
+}

@@ -16,7 +16,6 @@ interface BentoTileProps {
   children: React.ReactNode;
   title: string;
   badge?: CategoryKind;
-  numbered?: string;
   footer?: React.ReactNode;
   colSpan?: number;
   mdColSpan?: number;
@@ -29,7 +28,6 @@ export function BentoTile({
   children,
   title,
   badge,
-  numbered,
   footer,
   colSpan = 12,
   mdColSpan,
@@ -51,9 +49,6 @@ export function BentoTile({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-3 border-b border-np pb-2">
           <span className="bento-tile__title">
-            {numbered && (
-              <span className="text-np-faint mr-1.5">{numbered}</span>
-            )}
             {title}
           </span>
           {badge && <CategoryBadge kind={badge} />}

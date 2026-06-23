@@ -1,0 +1,21 @@
+{
+  "ipDiscovery": {
+    "sections": {
+      "exploreConnection": "Explore your connection",
+      "advancedDetails": "Advanced details"
+    },
+    "tiles": {
+      "ipAddress": { "title": "Your IP address" },
+      "latency": { "title": "Latency" },
+      "location": { "title": "Location" },
+      "network": { "title": "Network & ISP" },
+      "protocol": { "title": "Protocol & TLS" },
+      "map": { "title": "Location map" },
+      "privacy": { "title": "Privacy & security" },
+      "threatIntel": { "title": "Reputation check" },
+      "edgeProfile": { "title": "Connection details" },
+      "headers": { "title": "Request headers" },
+      "fingerprint": { "title": "Browser fingerprint" }
+    }
+  }
+}

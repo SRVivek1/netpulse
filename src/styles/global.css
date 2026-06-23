@@ -518,6 +518,8 @@ body {
 .category-badge--ping  { color: #60a5fa; background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.25); }
 .category-badge--map   { color: #c084fc; background: rgba(192, 132, 252, 0.1); border-color: rgba(192, 132, 252, 0.25); }
 .category-badge--edge  { color: var(--np-accent-muted); background: var(--np-accent-subtle); border-color: color-mix(in srgb, var(--np-accent) 20%, transparent); }
+.category-badge--hdr   { color: #22d3ee; background: rgba(34, 211, 238, 0.1); border-color: rgba(34, 211, 238, 0.25); }
+.category-badge--fp    { color: #2dd4bf; background: rgba(45, 212, 191, 0.1); border-color: rgba(45, 212, 191, 0.25); }
 
 .data-field__label {
   font-size: 0.6875rem;

@@ -1,6 +1,6 @@
 import { cn } from '../../lib/utils';
 
-export type CategoryKind = 'GEO' | 'BGP' | 'STACK' | 'WALL' | 'RBL' | 'PING' | 'MAP' | 'EDGE';
+export type CategoryKind = 'GEO' | 'BGP' | 'STACK' | 'WALL' | 'RBL' | 'PING' | 'MAP' | 'EDGE' | 'HDR' | 'FP';
 
 const KIND_STYLES: Record<CategoryKind, string> = {
   GEO:   'category-badge--geo',
@@ -11,6 +11,8 @@ const KIND_STYLES: Record<CategoryKind, string> = {
   PING:  'category-badge--ping',
   MAP:   'category-badge--map',
   EDGE:  'category-badge--edge',
+  HDR:   'category-badge--hdr',
+  FP:    'category-badge--fp',
 };
 
 interface CategoryBadgeProps {
