@@ -2,13 +2,14 @@
 import Shell from '../layouts/Shell.astro';
 import { getEnabledFeatures, getSiteConfig } from '../lib/config';
 import IpDiscovery from '../components/features/ip/IpDiscovery';
-import GeolocationMap from '../components/features/geolocation/GeolocationMap';
 import ComingSoon from '../components/features/ComingSoon';
 
 const features = getEnabledFeatures();
 const site = getSiteConfig();
 
-const IMPLEMENTED = new Set(['ip_discovery', 'geolocation_map']);
+const IMPLEMENTED = new Set(['ip_discovery']);
+
+const HASH_ALIASES = { geolocation_map: 'ip_discovery' };
 
 // Embed feature map for client router
 const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.label, icon: f.icon }]));
@@ -27,7 +28,6 @@ const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.labe
       <div class="p-6 md:p-8 pb-16">
         {IMPLEMENTED.has(f.id)
           ? f.id === 'ip_discovery' ? <IpDiscovery client:load />
-          : f.id === 'geolocation_map' ? <GeolocationMap client:load />
           : null
           : <ComingSoon label={f.label} client:load />
         }
@@ -37,7 +37,7 @@ const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.labe
 
 </Shell>
 
-<script define:vars={{ defaultFeature: site.site.defaultFeature, featureMap }}>
+<script define:vars={{ defaultFeature: site.site.defaultFeature, featureMap, hashAliases: HASH_ALIASES }}>
   // ── Icon paths (inline so the router has zero extra fetches) ─────────
   const ICONS = {
     globe:          '<path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
@@ -94,7 +94,14 @@ const featureMap = Object.fromEntries(features.map((f) => [f.id, { label: f.labe
       btn.addEventListener('click', () => navigateTo(btn.dataset.feature));
     });
 
-    const hash = location.hash.slice(1);
+    window.addEventListener('hashchange', () => {
+      const raw = location.hash.slice(1);
+      const resolved = hashAliases[raw] ?? raw;
+      if (resolved !== raw) navigateTo(resolved);
+    });
+
+    const rawHash = location.hash.slice(1);
+    const hash = hashAliases[rawHash] ?? rawHash;
     const panels = [...document.querySelectorAll('.np-panel')].map((p) => p.dataset.panel);
     navigateTo(panels.includes(hash) ? hash : defaultFeature);
   }

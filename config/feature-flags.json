@@ -5,11 +5,11 @@
       "enabled": true,
       "beta": false,
       "order": 1,
-      "label": "IP & ASN",
+      "label": "IP & Location",
       "icon": "globe"
     },
     "geolocation_map": {
-      "enabled": true,
+      "enabled": false,
       "beta": false,
       "order": 2,
       "label": "Geolocation",

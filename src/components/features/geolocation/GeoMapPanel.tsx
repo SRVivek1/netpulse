@@ -2,58 +2,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { DivIcon, LatLngExpression, LayerGroup, Map, TileLayer, TileLayerOptions } from 'leaflet';
 import {
-  AlertTriangle, Globe2, Info, LocateFixed, MapPin, Navigation, RefreshCw, Shield,
+  Globe2, Info, LocateFixed, MapPin, Navigation, RefreshCw, Shield,
 } from 'lucide-react';
 import type { IpData } from '../../../types/api';
 import type { AppConfig } from '../../../types/config';
 import {
   antipode, formatDistanceKm, GPS_IP_MISMATCH_KM, haversineKm, type LatLon,
 } from '../../../lib/geo';
-import {
-  countryFlag, fetchWithTimeout, formatCoords, formatLocation,
-} from '../../../lib/utils';
+import { cn, countryFlag, formatCoords, formatLocation } from '../../../lib/utils';
 import { Badge } from '../../ui/Badge';
 import { CopyButton } from '../../ui/CopyButton';
 
-const FEATURE_ID = 'geolocation_map';
 const FALLBACK_PROVIDER = 'carto';
-
-function isPanelActive(): boolean {
-  if (typeof window === 'undefined') return false;
-  const hash = window.location.hash.slice(1);
-  if (hash === FEATURE_ID) return true;
-  if (hash) return false;
-  const panel = document.getElementById(`panel-${FEATURE_ID}`);
-  return panel?.style.display !== 'none';
-}
-
-function GeoSkeleton() {
-  return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      <div className="skeleton h-28 rounded-xl" />
-      <div className="skeleton h-[420px] rounded-xl" />
-      <div className="grid grid-cols-2 gap-3">
-        <div className="skeleton h-20 rounded-xl" />
-        <div className="skeleton h-20 rounded-xl" />
-      </div>
-    </div>
-  );
-}
-
-function GeoError({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="max-w-md mx-auto flex flex-col items-center justify-center py-24 gap-4 text-center">
-      <div className="size-14 rounded-2xl bg-red-400/10 border border-red-400/20 flex items-center justify-center">
-        <AlertTriangle className="text-red-400" size={24} strokeWidth={1.5} />
-      </div>
-      <div>
-        <p className="text-np font-display font-semibold text-lg">Couldn&apos;t load location</p>
-        <p className="font-mono text-[0.75rem] text-np-muted mt-1">{message}</p>
-      </div>
-      <button onClick={onRetry} className="cta-primary">Try again</button>
-    </div>
-  );
-}
 
 function LegendItem({ colorClass, label }: { colorClass: string; label: string }) {
   return (
@@ -87,18 +47,24 @@ function divMarker(L: typeof import('leaflet').default, className: string): DivI
   });
 }
 
-export default function GeolocationMap() {
-  const [ipData, setIpData] = useState<IpData | null>(null);
-  const [appConfig, setAppConfig] = useState<AppConfig | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [panelActive, setPanelActive] = useState(false);
+interface Props {
+  ipData: IpData;
+  appConfig: AppConfig;
+  className?: string;
+  style?: React.CSSProperties;
+  /** When true, omits the location text header (shown in GEO bento tile instead). */
+  compact?: boolean;
+}
+
+export function GeoMapPanel({ ipData, appConfig, className, style, compact = false }: Props) {
+  const [visible, setVisible] = useState(false);
   const [tilesFailed, setTilesFailed] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [gps, setGps] = useState<LatLon | null>(null);
   const [gpsStatus, setGpsStatus] = useState<'idle' | 'loading' | 'denied' | 'error'>('idle');
   const [gpsMessage, setGpsMessage] = useState<string | null>(null);
 
+  const panelRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const tileLayerRef = useRef<TileLayer | null>(null);
@@ -117,42 +83,22 @@ export default function GeolocationMap() {
     }
   }, []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [ipRes, cfgRes] = await Promise.all([
-        fetchWithTimeout('/api/ip', {}, 10_000),
-        fetchWithTimeout('/api/config', {}, 10_000),
-      ]);
-      if (!ipRes.ok) throw new Error(`IP API HTTP ${ipRes.status}`);
-      if (!cfgRes.ok) throw new Error(`Config API HTTP ${cfgRes.status}`);
-      setIpData(await ipRes.json());
-      setAppConfig(await cfgRes.json());
-    } catch (e) {
-      const msg = e instanceof DOMException && e.name === 'AbortError'
-        ? 'Request timed out — try again'
-        : e instanceof Error ? e.message : 'Unknown error';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
   useEffect(() => {
-    const sync = () => setPanelActive(isPanelActive());
-    sync();
-    window.addEventListener('hashchange', sync);
-    return () => window.removeEventListener('hashchange', sync);
+    const el = panelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry?.isIntersecting) setVisible(true); },
+      { rootMargin: '100px', threshold: 0.01 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
-  const hasGeo = ipData?.latitude != null && ipData?.longitude != null;
+  const hasGeo = ipData.latitude != null && ipData.longitude != null;
   const ipPoint = useMemo((): LatLon | null => {
-    if (ipData?.latitude == null || ipData?.longitude == null) return null;
+    if (ipData.latitude == null || ipData.longitude == null) return null;
     return { lat: ipData.latitude, lon: ipData.longitude };
-  }, [ipData?.latitude, ipData?.longitude]);
+  }, [ipData.latitude, ipData.longitude]);
   const antipodePoint = useMemo(
     () => (ipPoint ? antipode(ipPoint.lat, ipPoint.lon) : null),
     [ipPoint],
@@ -164,7 +110,7 @@ export default function GeolocationMap() {
   }, [ipPoint, gps]);
 
   const timezoneMismatch = Boolean(
-    ipData?.timezone && browserTimezone && ipData.timezone !== browserTimezone,
+    ipData.timezone && browserTimezone && ipData.timezone !== browserTimezone,
   );
 
   const requestGps = () => {
@@ -261,9 +207,8 @@ export default function GeolocationMap() {
     }
   }, []);
 
-  // Initialise map once when panel is shown — stable deps only.
   useEffect(() => {
-    if (!panelActive || !hasGeo || !appConfig || tilesFailed || !mapContainerRef.current) return;
+    if (!visible || !hasGeo || tilesFailed || !mapContainerRef.current) return;
     if (mapRef.current) return;
 
     let cancelled = false;
@@ -315,7 +260,6 @@ export default function GeolocationMap() {
           setMapReady(true);
         });
 
-        // If primary provider serves no tiles (e.g. 401 placeholders), swap after brief wait.
         window.setTimeout(() => {
           if (cancelled || usingFallbackTilesRef.current || tilesLoaded > 0) return;
           swapToFallbackTiles(L, map);
@@ -323,7 +267,6 @@ export default function GeolocationMap() {
       });
     };
 
-    // Wait for panel layout after display:none → block transition.
     requestAnimationFrame(() => requestAnimationFrame(initMap));
 
     return () => {
@@ -337,27 +280,17 @@ export default function GeolocationMap() {
       tileErrorCountRef.current = 0;
       setMapReady(false);
     };
-  }, [panelActive, hasGeo, appConfig, tilesFailed, swapToFallbackTiles, placeMarkers, ipPoint]);
+  }, [visible, hasGeo, appConfig, tilesFailed, swapToFallbackTiles, placeMarkers, ipPoint]);
 
-  // Update markers without tearing down the map.
   useEffect(() => {
     if (!mapRef.current || !leafletRef.current) return;
     placeMarkers(leafletRef.current, mapRef.current, ipPoint, antipodePoint, gps);
   }, [ipPoint?.lat, ipPoint?.lon, gps?.lat, gps?.lon, placeMarkers, ipPoint, antipodePoint, gps]);
 
-  // Leaflet mis-measures size when the panel was display:none.
   useEffect(() => {
-    if (!panelActive || !mapRef.current) return;
-    const map = mapRef.current;
-    requestAnimationFrame(() => {
-      map.invalidateSize();
-    });
-  }, [panelActive]);
-
-  if (loading) return <GeoSkeleton />;
-  if (error || !ipData || !appConfig) {
-    return <GeoError message={error ?? 'No data'} onRetry={load} />;
-  }
+    if (!visible || !mapRef.current) return;
+    requestAnimationFrame(() => mapRef.current?.invalidateSize());
+  }, [visible]);
 
   const flag = countryFlag(ipData.country);
   const location = formatLocation(ipData.city, ipData.region, ipData.countryName ?? ipData.country);
@@ -367,19 +300,9 @@ export default function GeolocationMap() {
     : '—';
 
   return (
-    <div className="max-w-3xl mx-auto pb-8">
-
-      {!ipData.edgeDataAvailable && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 animate-fade-up">
-          <Info size={16} className="text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-[0.78rem] text-amber-200/80 leading-relaxed">
-            Edge data unavailable in local dev. Deploy to Cloudflare preview or production for real geo coordinates.
-          </p>
-        </div>
-      )}
-
-      {/* Location header */}
-      <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-4 mb-4 animate-fade-up">
+    <div ref={panelRef} className={cn(compact ? 'space-y-3' : 'space-y-4', className)} style={style}>
+      {!compact && (
+      <div className="np-card px-4 py-4 animate-fade-up">
         <div className="flex items-center gap-2 mb-2">
           <MapPin size={14} className="text-violet-400/80" />
           <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint">
@@ -402,28 +325,29 @@ export default function GeolocationMap() {
           Approximate location based on IP — city-level accuracy, often off by 50–200 km.
         </p>
       </div>
+      )}
 
       {/* Map or fallback */}
       {hasGeo && !tilesFailed ? (
-        <div className="mb-4 animate-fade-up relative" style={{ '--delay': '0.04s' } as React.CSSProperties}>
+        <div className="animate-fade-up relative np-card p-1" style={{ '--delay': '0.04s' } as React.CSSProperties}>
           <div
             ref={mapContainerRef}
-            className="geo-map-container h-[420px] border border-np"
+            className="geo-map-container h-[280px] lg:h-[340px]"
             aria-label="Geolocation map"
           />
-          {!mapReady && panelActive && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[var(--np-map-bg)]/80 rounded-xl pointer-events-none">
+          {!mapReady && visible && (
+            <div className="absolute inset-1 flex items-center justify-center bg-[var(--np-map-bg)]/80 rounded-lg pointer-events-none">
               <RefreshCw size={20} className="text-np-faint animate-spin" />
             </div>
           )}
-          <div className="flex flex-wrap gap-4 mt-3 px-1">
+          <div className="flex flex-wrap gap-4 mt-3 px-3 pb-2">
             <LegendItem colorClass="bg-violet-500" label="IP geolocation" />
             <LegendItem colorClass="bg-amber-500" label="Antipode" />
             {gps && <LegendItem colorClass="bg-emerald-400" label="Browser GPS" />}
           </div>
         </div>
       ) : (
-        <div className="mb-4 rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-8 text-center animate-fade-up">
+        <div className="np-card px-4 py-8 text-center animate-fade-up">
           <Globe2 size={28} className="mx-auto text-np-faint mb-3" />
           <p className="text-[0.88rem] text-np-muted mb-1">
             {hasGeo ? 'Map tiles unavailable' : 'Location unavailable on map'}
@@ -441,7 +365,7 @@ export default function GeolocationMap() {
 
       {/* GPS compare */}
       <div
-        className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-4 mb-4 animate-fade-up"
+        className="np-card px-4 py-4 animate-fade-up"
         style={{ '--delay': '0.08s' } as React.CSSProperties}
       >
         <div className="flex items-center justify-between gap-3 mb-3">
@@ -512,7 +436,7 @@ export default function GeolocationMap() {
       {/* Antipode */}
       {antipodePoint && (
         <div
-          className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-4 animate-fade-up"
+          className="np-card px-4 py-4 animate-fade-up"
           style={{ '--delay': '0.12s' } as React.CSSProperties}
         >
           <div className="flex items-center gap-2 mb-2">

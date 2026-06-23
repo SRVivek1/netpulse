@@ -2,13 +2,7 @@ import { cn } from '../../lib/utils';
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn(
-      'bg-elevated border border-np rounded-xl',
-      'shadow-[0_1px_3px_var(--np-shadow),0_4px_16px_var(--np-shadow)]',
-      'hover:border-[var(--np-border-strong)] hover:shadow-[0_1px_3px_var(--np-shadow),0_4px_16px_var(--np-shadow),0_0_20px_var(--np-accent-subtle)]',
-      'transition-all duration-200 overflow-hidden',
-      className
-    )}>
+    <div className={cn('np-card overflow-hidden', className)}>
       {children}
     </div>
   );

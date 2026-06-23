@@ -11,28 +11,29 @@ const { features, siteName, version } = Astro.props;
 
 <aside
   id="np-sidebar"
-  class="hidden md:flex flex-col w-[240px] shrink-0 h-screen
-         bg-surface border-r border-np sticky top-0 z-20 overflow-y-auto"
+  class="hidden md:flex flex-col shrink-0 h-screen
+         bg-surface border-r border-np sticky top-0 z-20 overflow-y-auto overflow-x-hidden"
   role="navigation"
   aria-label="Feature navigation"
 >
   <!-- Logo -->
   <a href="/"
-    class="flex items-center gap-2.5 px-4 h-14 border-b border-np shrink-0 no-underline group"
-    aria-label={`${siteName} home`}>
-    <div class="w-7 h-7 rounded-lg flex items-center justify-center font-display font-extrabold
+    class="flex items-center gap-2.5 px-3 h-14 border-b border-np shrink-0 no-underline group"
+    aria-label={`${siteName} home`}
+    title={`${siteName} v${version}`}>
+    <div class="w-8 h-8 rounded-lg flex items-center justify-center font-display font-extrabold
                 text-sm text-white shrink-0 bg-gradient-to-br from-accent to-violet-500
                 shadow-[0_0_12px_var(--np-accent-subtle)] group-hover:shadow-[0_0_20px_var(--np-accent-muted)]
                 transition-shadow" aria-hidden="true">N</div>
-    <div>
+    <div class="np-sidebar-logo-text whitespace-nowrap">
       <div class="font-display font-bold text-[0.95rem] text-np leading-none">{siteName}</div>
       <div class="font-mono text-[0.63rem] text-np-faint mt-0.5">v{version}</div>
     </div>
   </a>
 
   <!-- Nav -->
-  <nav class="flex-1 p-2 overflow-y-auto" aria-label="Tools">
-    <p class="px-2.5 py-2 text-[0.63rem] font-semibold uppercase tracking-[0.1em] text-np-faint">Tools</p>
+  <nav class="flex-1 p-1.5 overflow-y-auto" aria-label="Tools">
+    <p class="np-sidebar-section px-2.5 py-2 text-[0.63rem] font-semibold uppercase tracking-[0.1em] text-np-faint whitespace-nowrap">Tools</p>
 
     {features.map((f) => (
       <button
@@ -42,21 +43,22 @@ const { features, siteName, version } = Astro.props;
                transition-all duration-150
                hover:bg-hover hover:text-np
                relative group"
-        data-feature={f.id}>
-        <!-- active indicator -->
+        data-feature={f.id}
+        aria-label={f.label}
+        title={f.label}>
         <span class="absolute left-0 inset-y-[25%] w-[2px] rounded-full bg-accent
                      opacity-0 transition-opacity group-[.active]:opacity-100" aria-hidden="true" />
-        <span class="np-icon-slot size-[14px] shrink-0 flex items-center" data-icon={f.icon} aria-hidden="true" />
-        <span class="flex-1 flex items-center gap-1.5 min-w-0 truncate">
+        <span class="np-icon-slot size-[16px] shrink-0 flex items-center mx-0.5" data-icon={f.icon} aria-hidden="true" />
+        <span class="np-sidebar-label flex-1 flex items-center gap-1.5 min-w-0 truncate whitespace-nowrap">
           {f.label}
           {f.beta && (
-            <span class="shrink-0 text-[0.57rem] font-bold font-mono px-1 py-px rounded
+            <span class="np-sidebar-beta shrink-0 text-[0.57rem] font-bold font-mono px-1 py-px rounded
                          bg-violet-500/15 text-violet-400 border border-violet-500/25 uppercase tracking-wide">
               BETA
             </span>
           )}
         </span>
-        <svg class="size-3 text-np-faint opacity-0 group-hover:opacity-100 group-[.active]:opacity-100
+        <svg class="np-sidebar-chevron size-3 text-np-faint opacity-0 group-hover:opacity-100 group-[.active]:opacity-100
                     transition-opacity shrink-0" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
              aria-hidden="true">
@@ -67,13 +69,13 @@ const { features, siteName, version } = Astro.props;
   </nav>
 
   <!-- Footer -->
-  <div class="p-3 border-t border-np shrink-0">
+  <div class="p-2 border-t border-np shrink-0">
     <div id="ad-sidebar-bottom" class="hidden mb-2">
       <ins class="adsbygoogle block" data-ad-format="auto"
            data-full-width-responsive="true" data-ad-slot="" />
     </div>
-    <p class="text-[0.67rem] text-np-faint text-center leading-relaxed">
-      Powered by Cloudflare's global edge<br/>No data stored or logged
+    <p class="np-sidebar-footer-text text-[0.67rem] text-np-faint text-center leading-relaxed whitespace-nowrap">
+      Cloudflare edge · No logs
     </p>
   </div>
 </aside>

@@ -10,7 +10,7 @@ export function IpNeighbourhood({ ip }: Props) {
 
   if (!hood) {
     return (
-      <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-3">
+      <div className="np-card px-4 py-3">
         <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint mb-1.5">
           IP neighbourhood
         </p>
@@ -22,7 +22,7 @@ export function IpNeighbourhood({ ip }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-3">
+    <div className="np-card px-4 py-3">
       <div className="flex items-center justify-between mb-2.5">
         <p className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint">
           IP neighbourhood <span className="text-np-faint font-normal">/24 block</span>

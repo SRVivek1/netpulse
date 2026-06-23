@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetPulse Bento // High-Density Telemetry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .bento-box {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #111827 25%, #1f2937 50%, #111827 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between selection:bg-emerald-400 selection:text-slate-900">
+
+    <div class="fixed top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <header class="border-b border-gray-800 bg-gray-950/40 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <span class="font-mono text-xs tracking-widest text-emerald-400 font-bold">NETPULSE // BENTO_CORE</span>
+            <button onclick="refreshMockData()" class="bg-gray-800 hover:bg-gray-700 text-[11px] font-mono px-3 py-1.5 rounded border border-gray-700 text-gray-300 transition-colors">
+                Cycle Realtime Data
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-10 w-full flex-grow">
+        <div class="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-4">
+            
+            <div class="bento-box rounded-2xl p-6 md:col-span-6 lg:col-span-8 flex flex-col justify-between relative overflow-hidden group">
+                <p class="text-[10px] font-mono uppercase tracking-widest text-emerald-400">Target Vector Host</p>
+                <div id="ip-container" class="my-6 min-h-[4rem] flex items-center">
+                    <div class="shimmer h-12 w-80 rounded-xl"></div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-400 font-mono">Status: Routing Verified</span>
+                    <button onclick="copyIpAddress()" id="copy-btn" class="hidden text-[11px] font-mono bg-emerald-400 hover:bg-emerald-300 text-slate-950 px-2.5 py-1 rounded transition-colors font-bold">
+                        Copy Vector IP
+                    </button>
+                </div>
+            </div>
+
+            <div class="bento-box rounded-2xl p-5 md:col-span-3 lg:col-span-4 flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono uppercase text-gray-400">Ping Jitter Profile</span>
+                    <span class="text-xs font-mono text-emerald-400 font-bold" id="avg-ping">--</span>
+                </div>
+                <div class="h-20 bg-gray-950/80 border border-gray-800/60 rounded-xl flex items-end justify-between px-3 py-2 mt-4" id="latency-bars">
+                    <div class="shimmer h-full w-full rounded"></div>
+                </div>
+            </div>
+
+            <div class="bento-box rounded-2xl p-5 md:col-span-3 lg:col-span-4 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-gray-400">01 / Geo Target Location</span>
+                <div class="my-3 space-y-1">
+                    <div class="text-base font-bold text-white data-field"><div class="shimmer h-5 w-32 rounded"></div></div>
+                    <div class="text-xs font-mono text-gray-400 data-field"><div class="shimmer h-4 w-24 rounded"></div></div>
+                </div>
+                <span class="text-[10px] font-mono text-gray-600">Accuracy Vector: Radius 5km</span>
+            </div>
+
+            <div class="bento-box rounded-2xl p-5 md:col-span-3 lg:col-span-4 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-gray-400">02 / BGP Transit Autonomous</span>
+                <div class="my-3 space-y-1">
+                    <div class="text-sm font-semibold text-gray-200 truncate data-field"><div class="shimmer h-4 w-40 rounded"></div></div>
+                    <div class="text-xs font-mono text-emerald-400 data-field"><div class="shimmer h-4 w-20 rounded"></div></div>
+                </div>
+                <span class="text-[10px] font-mono text-gray-600">Peering Layer: Edge Tier-1</span>
+            </div>
+
+            <div class="bento-box rounded-2xl p-5 md:col-span-3 lg:col-span-4 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-gray-400">03 / Dual-Stack Interface</span>
+                <div class="my-3 space-y-1">
+                    <div class="text-xs font-mono text-gray-400 data-field"><div class="shimmer h-4 w-12 rounded"></div></div>
+                    <div class="text-[11px] font-mono text-gray-300 truncate data-field"><div class="shimmer h-4 w-44 rounded"></div></div>
+                </div>
+                <span class="text-[10px] font-mono text-gray-600">MTU Interface: 1500 Bytes</span>
+            </div>
+
+            <div class="bento-box rounded-2xl p-5 md:col-span-3 lg:col-span-4 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-gray-400">04 / Privacy Gateway Seal</span>
+                <div class="my-3 space-y-2">
+                    <div class="data-field"><div class="shimmer h-4 w-24 rounded"></div></div>
+                    <div class="text-xs font-mono text-gray-300 data-field"><div class="shimmer h-4 w-20 rounded"></div></div>
+                </div>
+                <span class="text-[10px] font-mono text-gray-600">Header Inspection Verified</span>
+            </div>
+
+            <div class="bento-box rounded-2xl p-5 md:col-span-3 lg:col-span-8 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-gray-400 mb-3 block">05 / Global Reputation Blacklist (RBL) Threat Consensus</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-gray-900 border border-gray-800 p-3 rounded-xl">
+                        <span class="text-[10px] font-mono text-gray-500 block">SPAMHAUS</span>
+                        <div class="text-xs font-mono font-bold mt-1 data-field"><div class="shimmer h-4 w-16 rounded"></div></div>
+                    </div>
+                    <div class="bg-gray-900 border border-gray-800 p-3 rounded-xl">
+                        <span class="text-[10px] font-mono text-gray-500 block">ABUSEIPDB</span>
+                        <div class="text-xs font-mono font-bold mt-1 data-field"><div class="shimmer h-4 w-12 rounded"></div></div>
+                    </div>
+                    <div class="bg-gray-900 border border-gray-800 p-3 rounded-xl">
+                        <span class="text-[10px] font-mono text-gray-500 block">BARRACUDA</span>
+                        <div class="text-xs font-mono font-bold mt-1 data-field"><div class="shimmer h-4 w-16 rounded"></div></div>
+                    </div>
+                    <div class="bg-gray-900 border border-gray-800 p-3 rounded-xl">
+                        <span class="text-[10px] font-mono text-gray-500 block">SAFE BROWSING</span>
+                        <div class="text-xs font-mono font-bold mt-1 data-field"><div class="shimmer h-4 w-16 rounded"></div></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl font-mono text-xs font-bold shadow-2xl opacity-0 transform translate-y-2 pointer-events-none transition-all duration-300 z-50">
+        Buffer string captured.
+    </div>
+
+    <footer class="border-t border-gray-900 bg-gray-950/80 py-4 text-center">
+        <p class="text-[10px] font-mono text-gray-600">NetPulse Bento Core Grid Stack Framework · 2026</p>
+    </footer>
+
+    <script>
+        const payloads = [
+            {
+                ip: "157.48.214.90",
+                city: "Bengaluru, India",
+                coords: "12.9716° N / 77.5946° E",
+                isp: "Reliance Jio Infocomm Ltd",
+                asn: "AS55836",
+                v4: "IPv4 Native",
+                v6: "2409:4060:2e93:990c::/64",
+                vpn: "Residential",
+                tor: "No Match Detected",
+                spamhaus: "Listed (Warn)",
+                abuseScore: "0%",
+                barracuda: "Passed",
+                safebrowsing: "Compliant",
+                pings: [12, 16, 14, 11, 13, 20, 15, 14, 12, 15, 13, 11, 16],
+                avg: "13.6 ms"
+            },
+            {
+                ip: "198.51.100.42",
+                city: "Frankfurt, Germany",
+                coords: "50.1109° N / 8.6821° E",
+                isp: "DigitalOcean Datacenters",
+                asn: "AS14061",
+                v4: "IPv4 Native",
+                v6: "2a03:b0c0:3:d0::1f5:1",
+                vpn: "Proxy Detected",
+                tor: "Active Relay Match",
+                spamhaus: "Passed",
+                abuseScore: "42%",
+                barracuda: "Blocked",
+                safebrowsing: "Flagged Node",
+                pings: [45, 41, 44, 42, 68, 43, 89, 41, 45, 42, 43, 44, 41],
+                avg: "48.1 ms"
+            }
+        ];
+
+        let cursor = 0;
+
+        function updateBentoUI() {
+            const current = payloads[cursor];
+            document.getElementById('ip-container').innerHTML = `<h1 id="ip-text" class="text-3xl md:text-4xl font-extrabold text-white font-mono tracking-tight cursor-pointer select-all" onclick="copyIpAddress()">${current.ip}</h1>`;
+            
+            const fields = document.querySelectorAll('.data-field');
+            fields[0].innerText = current.city;
+            fields[1].innerText = current.coords;
+            fields[2].innerText = current.isp;
+            fields[3].innerText = current.asn;
+            fields[4].innerText = current.v4;
+            fields[5].innerText = current.v6;
+            
+            // Privacy Visual Elements mappings
+            fields[6].innerHTML = `<span class="text-xs font-mono font-bold px-2 py-0.5 rounded ${current.vpn === 'Residential' ? 'text-emerald-400 bg-emerald-500/10':'text-amber-400 bg-amber-500/10'}">${current.vpn}</span>`;
+            fields[7].innerText = current.tor;
+
+            // RBL Matrix Bindings
+            fields[8].innerHTML = `<span class="${current.spamhaus === 'Passed' ? 'text-emerald-400' : 'text-amber-400'}">${current.spamhaus}</span>`;
+            fields[9].innerHTML = `<span class="${current.abuseScore === '0%' ? 'text-emerald-400' : 'text-red-400 font-bold'}">${current.abuseScore}</span>`;
+            fields[10].innerHTML = `<span class="${current.barracuda === 'Passed' ? 'text-emerald-400' : 'text-red-400'}">${current.barracuda}</span>`;
+            fields[11].innerHTML = `<span class="${current.safebrowsing === 'Compliant' ? 'text-emerald-400' : 'text-red-400'}">${current.safebrowsing}</span>`;
+
+            // Latency Calculations and Matrix Generation
+            document.getElementById('avg-ping').innerText = current.avg;
+            let barHtml = '';
+            const maxVal = Math.max(...current.pings);
+            current.pings.forEach(v => {
+                const heightPercentage = (v / maxVal) * 100;
+                const fillClass = v > 50 ? 'bg-red-400' : v > 20 ? 'bg-amber-400' : 'bg-emerald-400';
+                barHtml += `<div class="w-1.5 ${fillClass} rounded-t transition-all duration-500" style="height: ${heightPercentage}%"></div>`;
+            });
+            document.getElementById('latency-bars').innerHTML = barHtml;
+            document.getElementById('copy-btn').classList.replace('hidden', 'block');
+        }
+
+        function refreshMockData() {
+            document.getElementById('copy-btn').classList.replace('block', 'hidden');
+            document.getElementById('ip-container').innerHTML = `<div class="shimmer h-12 w-80 rounded-xl"></div>`;
+            document.querySelectorAll('.data-field').forEach(f => f.innerHTML = `<div class="shimmer h-4 w-20 rounded"></div>`);
+            document.getElementById('latency-bars').innerHTML = `<div class="shimmer h-full w-full rounded"></div>`;
+            document.getElementById('avg-ping').innerText = "--";
+            
+            cursor = (cursor + 1) % payloads.length;
+            setTimeout(updateBentoUI, 950);
+        }
+
+        function copyIpAddress() {
+            const raw = document.getElementById('ip-text').innerText;
+            navigator.clipboard.writeText(raw).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+                toast.classList.add('opacity-100', 'translate-y-0');
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+                }, 2000);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => setTimeout(updateBentoUI, 1200));
+    </script>
+</body>
+</html>

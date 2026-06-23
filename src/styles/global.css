@@ -29,6 +29,10 @@
   --np-accent-subtle: rgba(56, 189, 248, 0.12);
   --np-grid-line:    rgba(255, 255, 255, 0.025);
   --np-shadow:       rgba(0, 0, 0, 0.45);
+  --np-shadow-sm:    rgba(0, 0, 0, 0.25);
+  --np-shadow-md:    rgba(0, 0, 0, 0.45);
+  --np-shadow-lg:    rgba(0, 0, 0, 0.55);
+  --np-border-card:  color-mix(in srgb, rgba(255, 255, 255, 0.1) 85%, #38bdf8 15%);
   --np-overlay:      rgba(0, 0, 0, 0.35);
   --np-hero-from:    #13161d;
   --np-hero-mid:     #0f1118;
@@ -55,6 +59,10 @@
   --np-accent-subtle: rgba(139, 92, 246, 0.12);
   --np-grid-line:    rgba(0, 0, 0, 0.04);
   --np-shadow:       rgba(0, 0, 0, 0.12);
+  --np-shadow-sm:    rgba(0, 0, 0, 0.06);
+  --np-shadow-md:    rgba(0, 0, 0, 0.12);
+  --np-shadow-lg:    rgba(0, 0, 0, 0.18);
+  --np-border-card:  color-mix(in srgb, rgba(0, 0, 0, 0.14) 85%, #8b5cf6 15%);
   --np-overlay:      rgba(0, 0, 0, 0.04);
   --np-hero-from:    #ffffff;
   --np-hero-mid:     #f8f9fb;
@@ -81,6 +89,10 @@
   --np-accent-subtle: rgba(34, 211, 238, 0.12);
   --np-grid-line:    rgba(34, 211, 238, 0.04);
   --np-shadow:       rgba(0, 0, 0, 0.45);
+  --np-shadow-sm:    rgba(0, 0, 0, 0.25);
+  --np-shadow-md:    rgba(0, 0, 0, 0.45);
+  --np-shadow-lg:    rgba(0, 0, 0, 0.55);
+  --np-border-card:  color-mix(in srgb, rgba(255, 255, 255, 0.1) 85%, #22d3ee 15%);
   --np-overlay:      rgba(0, 0, 0, 0.35);
   --np-hero-from:    #0e1520;
   --np-hero-mid:     #0a1018;
@@ -107,6 +119,10 @@
   --np-accent-subtle: rgba(34, 197, 94, 0.12);
   --np-grid-line:    rgba(34, 197, 94, 0.04);
   --np-shadow:       rgba(0, 0, 0, 0.45);
+  --np-shadow-sm:    rgba(0, 0, 0, 0.25);
+  --np-shadow-md:    rgba(0, 0, 0, 0.45);
+  --np-shadow-lg:    rgba(0, 0, 0, 0.55);
+  --np-border-card:  color-mix(in srgb, rgba(255, 255, 255, 0.1) 85%, #22c55e 15%);
   --np-overlay:      rgba(0, 0, 0, 0.35);
   --np-hero-from:    #0e1812;
   --np-hero-mid:     #0a120e;
@@ -133,6 +149,10 @@
   --np-accent-subtle: rgba(249, 115, 22, 0.12);
   --np-grid-line:    rgba(249, 115, 22, 0.04);
   --np-shadow:       rgba(0, 0, 0, 0.45);
+  --np-shadow-sm:    rgba(0, 0, 0, 0.25);
+  --np-shadow-md:    rgba(0, 0, 0, 0.45);
+  --np-shadow-lg:    rgba(0, 0, 0, 0.55);
+  --np-border-card:  color-mix(in srgb, rgba(255, 255, 255, 0.1) 85%, #f97316 15%);
   --np-overlay:      rgba(0, 0, 0, 0.35);
   --np-hero-from:    #181210;
   --np-hero-mid:     #120e0c;
@@ -159,6 +179,10 @@
   --np-accent-subtle: rgba(244, 63, 94, 0.12);
   --np-grid-line:    rgba(244, 63, 94, 0.04);
   --np-shadow:       rgba(0, 0, 0, 0.45);
+  --np-shadow-sm:    rgba(0, 0, 0, 0.25);
+  --np-shadow-md:    rgba(0, 0, 0, 0.45);
+  --np-shadow-lg:    rgba(0, 0, 0, 0.55);
+  --np-border-card:  color-mix(in srgb, rgba(255, 255, 255, 0.1) 85%, #f43f5e 15%);
   --np-overlay:      rgba(0, 0, 0, 0.35);
   --np-hero-from:    #181012;
   --np-hero-mid:     #120a0e;
@@ -237,13 +261,58 @@ body {
 .font-display { font-family: var(--font-display); }
 .font-mono    { font-family: var(--font-mono); }
 
-/* ── IP Discovery hero ───────────────────────────────────────────── */
-.ip-hero-glow {
+/* ── Card elevation system ─────────────────────────────────────── */
+.np-card {
+  background: var(--np-bg-elevated);
+  border: 1px solid var(--np-border-card);
+  border-radius: 0.875rem;
+  box-shadow:
+    0 0 0 1px var(--np-border-card),
+    0 1px 2px var(--np-shadow-sm),
+    0 4px 24px var(--np-shadow-md),
+    inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.np-card:hover {
+  border-color: var(--np-border-strong);
+  box-shadow:
+    0 0 0 1px var(--np-border-strong),
+    0 1px 2px var(--np-shadow-sm),
+    0 4px 24px var(--np-shadow-md),
+    0 0 24px var(--np-accent-subtle),
+    inset 0 1px 0 color-mix(in srgb, white 6%, transparent);
+}
+
+.np-card-hero {
   background: linear-gradient(145deg, var(--np-hero-from) 0%, var(--np-hero-mid) 60%, var(--np-hero-to) 100%);
-  border: 1px solid var(--np-border);
+  border: 1px solid var(--np-border-card);
   box-shadow:
     0 0 0 1px var(--np-accent-subtle),
-    0 8px 32px var(--np-shadow),
+    0 1px 2px var(--np-shadow-sm),
+    0 8px 32px var(--np-shadow-lg),
+    inset 0 1px 0 var(--np-border);
+  position: relative;
+  overflow: hidden;
+}
+.np-card-hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 60%;
+  height: 80%;
+  background: radial-gradient(ellipse, var(--np-accent-subtle) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── IP Discovery hero (alias) ───────────────────────────────────── */
+.ip-hero-glow {
+  background: linear-gradient(145deg, var(--np-hero-from) 0%, var(--np-hero-mid) 60%, var(--np-hero-to) 100%);
+  border: 1px solid var(--np-border-card);
+  box-shadow:
+    0 0 0 1px var(--np-accent-subtle),
+    0 1px 2px var(--np-shadow-sm),
+    0 8px 32px var(--np-shadow-lg),
     inset 0 1px 0 var(--np-border);
   position: relative;
   overflow: hidden;
@@ -264,8 +333,11 @@ body {
 
 .isp-block {
   background: var(--np-overlay);
-  border: 1px solid var(--np-accent-subtle);
-  box-shadow: inset 0 1px 0 var(--np-border);
+  border: 1px solid var(--np-border-card);
+  box-shadow:
+    0 0 0 1px var(--np-accent-subtle),
+    0 2px 12px var(--np-shadow-sm),
+    inset 0 1px 0 var(--np-border);
 }
 
 /* ── CTA buttons ─────────────────────────────────────────────────── */
@@ -312,8 +384,13 @@ body {
   gap: 0.25rem;
   padding: 0.75rem 0.875rem;
   border-radius: 0.75rem;
-  background: var(--np-overlay);
-  border: 1px solid var(--np-border);
+  background: var(--np-bg-elevated);
+  border: 1px solid var(--np-border-card);
+  box-shadow:
+    0 0 0 1px var(--np-border-card),
+    0 1px 2px var(--np-shadow-sm),
+    0 2px 12px var(--np-shadow-md),
+    inset 0 1px 0 color-mix(in srgb, white 4%, transparent);
   min-width: 0;
 }
 .stat-pill span:last-child {
@@ -361,3 +438,113 @@ body {
 .geo-marker-ip { background: #8b5cf6; color: #8b5cf6; }
 .geo-marker-antipode { background: #f59e0b; color: #f59e0b; }
 .geo-marker-gps { background: #34d399; color: #34d399; }
+
+/* ── Bento grid system ─────────────────────────────────────────── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+@media (min-width: 768px) {
+  .bento-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1rem; }
+}
+@media (min-width: 1024px) {
+  .bento-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+}
+
+.bento-tile__title {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--np-text-faint);
+}
+
+.bento-tile__footer {
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  color: var(--np-text-faint);
+}
+
+.np-card-glass {
+  background: color-mix(in srgb, var(--np-bg-elevated) 72%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Category badges (theme-aware semantic colors) */
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.625rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  border: 1px solid transparent;
+  letter-spacing: 0.05em;
+}
+.category-badge--geo   { color: var(--np-accent); background: var(--np-accent-subtle); border-color: color-mix(in srgb, var(--np-accent) 25%, transparent); }
+.category-badge--bgp   { color: #a78bfa; background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.25); }
+.category-badge--stack { color: #34d399; background: rgba(52, 211, 153, 0.1); border-color: rgba(52, 211, 153, 0.25); }
+.category-badge--wall  { color: #fbbf24; background: rgba(251, 191, 36, 0.1); border-color: rgba(251, 191, 36, 0.25); }
+.category-badge--rbl   { color: #f87171; background: rgba(248, 113, 113, 0.1); border-color: rgba(248, 113, 113, 0.25); }
+.category-badge--ping  { color: #60a5fa; background: rgba(96, 165, 250, 0.1); border-color: rgba(96, 165, 250, 0.25); }
+.category-badge--map   { color: #c084fc; background: rgba(192, 132, 252, 0.1); border-color: rgba(192, 132, 252, 0.25); }
+.category-badge--edge  { color: var(--np-accent-muted); background: var(--np-accent-subtle); border-color: color-mix(in srgb, var(--np-accent) 20%, transparent); }
+
+.data-field__label {
+  font-size: 0.6875rem;
+  color: var(--np-text-faint);
+  margin-bottom: 0.25rem;
+}
+.data-field__value {
+  font-size: 0.8125rem;
+  color: var(--np-text);
+  font-weight: 500;
+  word-break: break-word;
+}
+.data-field + .data-field { margin-top: 0.75rem; }
+
+/* Icon-rail sidebar */
+#np-sidebar {
+  width: 3.5rem;
+  transition: width 0.2s ease;
+  overflow: hidden;
+}
+#np-sidebar:hover,
+#np-sidebar:focus-within {
+  width: 12.5rem;
+}
+#np-sidebar .np-sidebar-label,
+#np-sidebar .np-sidebar-section,
+#np-sidebar .np-sidebar-footer-text,
+#np-sidebar .np-sidebar-chevron,
+#np-sidebar .np-sidebar-beta {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+#np-sidebar:hover .np-sidebar-label,
+#np-sidebar:hover .np-sidebar-section,
+#np-sidebar:hover .np-sidebar-footer-text,
+#np-sidebar:hover .np-sidebar-chevron,
+#np-sidebar:hover .np-sidebar-beta,
+#np-sidebar:focus-within .np-sidebar-label,
+#np-sidebar:focus-within .np-sidebar-section,
+#np-sidebar:focus-within .np-sidebar-footer-text,
+#np-sidebar:focus-within .np-sidebar-chevron,
+#np-sidebar:focus-within .np-sidebar-beta {
+  opacity: 1;
+}
+#np-sidebar .np-sidebar-logo-text {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.2s ease, opacity 0.15s ease;
+}
+#np-sidebar:hover .np-sidebar-logo-text,
+#np-sidebar:focus-within .np-sidebar-logo-text {
+  max-width: 10rem;
+  opacity: 1;
+}

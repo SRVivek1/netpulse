@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetPulse SaaS // Enterprise Network Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .premium-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between bg-gradient-to-tr from-slate-50 via-slate-100/40 to-blue-50/30">
+
+    <header class="border-b border-slate-200 bg-white/70 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="h-7 w-7 rounded-md bg-indigo-600 flex items-center justify-center font-mono font-bold text-white text-xs">
+                    NP
+                </div>
+                <span class="tracking-tight font-semibold text-slate-900 text-sm">NetPulse <span class="text-indigo-600 font-mono text-xs ml-1 px-1.5 py-0.5 bg-indigo-50 rounded">SaaS Console</span></span>
+            </div>
+            
+            <div class="hidden sm:flex items-center bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 w-64">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input type="text" placeholder="Lookup IP or Domain..." disabled class="bg-transparent text-xs outline-none w-full cursor-not-allowed placeholder-slate-400">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-10 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <div class="lg:col-span-7 space-y-4">
+            
+            <div class="premium-card rounded-xl p-6 relative">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 font-mono">Dynamic Connection Target</span>
+                    <button onclick="refreshMockData()" class="text-xs text-slate-400 hover:text-indigo-600 flex items-center space-x-1 font-mono transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18" /></svg>
+                        <span>Refresh Metrics</span>
+                    </button>
+                </div>
+                
+                <div id="ip-container" class="min-h-[3.5rem] flex items-center">
+                    <div class="shimmer h-10 w-64 rounded-lg"></div>
+                </div>
+
+                <button onclick="copyIpAddress()" id="copy-btn" class="hidden absolute right-6 bottom-6 items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-mono px-3 py-1.5 rounded-md transition-all">
+                    <span>Copy Endpoint</span>
+                </button>
+            </div>
+
+            <div class="premium-card rounded-xl overflow-hidden divide-y divide-slate-100">
+                
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">01 // Geolocation Matrix</h3>
+                        <div class="text-sm font-medium text-slate-800 mt-1 data-field"><div class="shimmer h-4 w-40 rounded"></div></div>
+                    </div>
+                    <div class="text-right font-mono text-xs text-slate-500 data-field"><div class="shimmer h-4 w-24 rounded"></div></div>
+                </div>
+
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">02 // Carrier BGP Pipeline</h3>
+                        <div class="text-sm font-medium text-slate-800 mt-1 data-field"><div class="shimmer h-4 w-48 rounded"></div></div>
+                    </div>
+                    <div class="text-right font-mono text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded data-field"><div class="shimmer h-4 w-16 rounded"></div></div>
+                </div>
+
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">03 // Network Dual-Stack Check</h3>
+                        <div class="text-xs font-mono text-slate-600 mt-1 data-field"><div class="shimmer h-4 w-56 rounded"></div></div>
+                    </div>
+                    <div class="text-right font-mono text-xs text-slate-700 data-field"><div class="shimmer h-4 w-12 rounded"></div></div>
+                </div>
+
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">04 // Opsec Integrity Wall</h3>
+                        <div class="text-sm font-medium text-slate-800 mt-1 data-field"><div class="shimmer h-4 w-32 rounded"></div></div>
+                    </div>
+                    <div class="text-right font-mono text-xs data-field"><div class="shimmer h-4 w-20 rounded"></div></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4">
+            
+            <div class="premium-card rounded-xl p-5">
+                <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 font-mono">Security Feed Verification</span>
+                    <span class="h-2 w-2 rounded-full bg-indigo-600 animate-ping"></span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p class="text-[11px] text-slate-400 font-mono uppercase">Spamhaus DBL</p>
+                        <div class="text-xs font-medium mt-0.5 data-field"><div class="shimmer h-4 w-16 rounded"></div></div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p class="text-[11px] text-slate-400 font-mono uppercase">AbuseIPDB Ratio</p>
+                        <div class="text-xs font-medium mt-0.5 data-field"><div class="shimmer h-4 w-12 rounded"></div></div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p class="text-[11px] text-slate-400 font-mono uppercase">Barracuda BRBL</p>
+                        <div class="text-xs font-medium mt-0.5 data-field"><div class="shimmer h-4 w-16 rounded"></div></div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <p class="text-[11px] text-slate-400 font-mono uppercase">Google SafeBrowsing</p>
+                        <div class="text-xs font-medium mt-0.5 data-field"><div class="shimmer h-4 w-20 rounded"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-card rounded-xl p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 font-mono">ICMP Latency Graph Loop</span>
+                    <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Avg: <span id="avg-ping" class="font-bold">--</span></span>
+                </div>
+
+                <div class="h-24 bg-slate-50 rounded-lg border border-slate-100 flex items-end justify-between px-4 py-2" id="latency-bars">
+                    <div class="shimmer h-full w-full rounded"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 text-white px-4 py-2.5 rounded-lg font-mono text-xs shadow-xl opacity-0 transform translate-y-2 pointer-events-none transition-all duration-300 z-50">
+        Copied connection string reference safely.
+    </div>
+
+    <footer class="border-t border-slate-200 bg-white/50 py-4 text-center">
+        <p class="text-[11px] font-mono text-slate-400">NetPulse SaaS Infrastructure Component Layout Engine · 2026</p>
+    </footer>
+
+    <script>
+        const payloads = [
+            {
+                ip: "157.48.214.90",
+                city: "Bengaluru, Karnataka (IN)",
+                coords: "12.9716° N / IST",
+                isp: "Reliance Jio Infocomm",
+                asn: "AS55836",
+                v6: "2409:4060:2e93:990c::/64",
+                v4: "IPv4 Handshake Confirmed",
+                vpn: "Clean Standard Residential Line",
+                tor: "Clear",
+                spamhaus: "Listed (Dynamic Allocation)",
+                abuseScore: "0% Clean",
+                barracuda: "Passed",
+                safebrowsing: "Secure Environment",
+                pings: [15, 12, 14, 13, 11, 14, 16, 18, 12, 14, 15, 11, 14, 13, 16],
+                avg: "13.8 ms"
+            },
+            {
+                ip: "198.51.100.42",
+                city: "Frankfurt, Hessen (DE)",
+                coords: "50.1109° N / CET",
+                isp: "DigitalOcean Infrastructure Cluster",
+                asn: "AS14061",
+                v6: "2a03:b0c0:3:d0::1f5:1",
+                v4: "IPv4 Handshake Confirmed",
+                vpn: "Data Center Proxied Route",
+                tor: "Active Exit Intercept",
+                spamhaus: "Passed Clean",
+                abuseScore: "42% Threat Risk",
+                barracuda: "Flagged Host",
+                safebrowsing: "Warning Triggered",
+                pings: [42, 45, 41, 68, 44, 43, 89, 42, 45, 41, 47, 43, 41, 44, 42],
+                avg: "47.2 ms"
+            }
+        ];
+
+        let idx = 0;
+
+        function renderTemplate() {
+            const current = payloads[idx];
+            document.getElementById('ip-container').innerHTML = `<h1 id="ip-text" class="text-2xl md:text-3xl font-bold text-slate-900 font-mono tracking-tight cursor-pointer select-all" onclick="copyIpAddress()">${current.ip}</h1>`;
+            
+            const cards = document.querySelectorAll('.data-field');
+            cards[0].innerHTML = current.city;
+            cards[1].innerText = current.coords;
+            cards[2].innerText = current.isp;
+            cards[3].innerText = current.asn;
+            cards[4].innerText = current.v6;
+            cards[5].innerText = current.v4;
+            
+            cards[6].innerHTML = `<span class="text-slate-700">${current.vpn}</span>`;
+            cards[7].innerHTML = `<span class="${current.tor === 'Clear' ? 'text-emerald-600' : 'text-red-500 font-semibold'}">${current.tor}</span>`;
+
+            // Threat Matrix Maps
+            cards[8].innerHTML = `<span class="${current.spamhaus.includes('Listed') ? 'text-amber-600' : 'text-emerald-600'}">${current.spamhaus}</span>`;
+            cards[9].innerHTML = `<span class="${current.abuseScore.includes('0%') ? 'text-emerald-600' : 'text-red-500 font-bold'}">${current.abuseScore}</span>`;
+            cards[10].innerHTML = `<span class="${current.barracuda === 'Passed' ? 'text-emerald-600' : 'text-red-500'}">${current.barracuda}</span>`;
+            cards[11].innerHTML = `<span class="${current.safebrowsing.includes('Secure') ? 'text-emerald-600' : 'text-amber-500'}">${current.safebrowsing}</span>`;
+
+            // Latency Arrays
+            document.getElementById('avg-ping').innerText = current.avg;
+            let barMarkup = '';
+            const maximum = Math.max(...current.pings);
+            current.pings.forEach(p => {
+                const heightPercentage = (p / maximum) * 100;
+                const fillClass = p > 50 ? 'bg-red-400' : p > 20 ? 'bg-amber-400' : 'bg-indigo-500';
+                barMarkup += `<div class="w-2 ${fillClass} rounded-t transition-all duration-500" style="height: ${heightPercentage}%"></div>`;
+            });
+            document.getElementById('latency-bars').innerHTML = barMarkup;
+            document.getElementById('copy-btn').classList.replace('hidden', 'flex');
+        }
+
+        function refreshMockData() {
+            document.getElementById('copy-btn').classList.replace('flex', 'hidden');
+            document.getElementById('ip-container').innerHTML = `<div class="shimmer h-10 w-64 rounded-lg"></div>`;
+            document.querySelectorAll('.data-field').forEach(d => d.innerHTML = `<div class="shimmer h-4 w-24 rounded"></div>`);
+            document.getElementById('latency-bars').innerHTML = `<div class="shimmer h-full w-full rounded"></div>`;
+            document.getElementById('avg-ping').innerText = "--";
+            
+            idx = (idx + 1) % payloads.length;
+            setTimeout(renderTemplate, 950);
+        }
+
+        function copyIpAddress() {
+            const rawText = document.getElementById('ip-text').innerText;
+            navigator.clipboard.writeText(rawText).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('opacity-0', 'translate-y-2', 'pointer-events-none');
+                toast.classList.add('opacity-100', 'translate-y-0');
+                setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'translate-y-0');
+                    toast.classList.add('opacity-0', 'translate-y-2', 'pointer-events-none');
+                }, 2000);
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => setTimeout(renderTemplate, 1200));
+    </script>
+</body>
+</html>

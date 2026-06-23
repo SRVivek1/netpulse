@@ -9,11 +9,12 @@ const VARIANT = {
 
 interface Props {
   risk: ConnectionRisk;
+  embedded?: boolean;
 }
 
-export function ConnectionRiskBadge({ risk }: Props) {
-  return (
-    <div className="rounded-xl border border-np bg-[var(--np-overlay)] px-4 py-3">
+export function ConnectionRiskBadge({ risk, embedded = false }: Props) {
+  const inner = (
+    <>
       <div className="flex items-center justify-between gap-3 mb-2">
         <span className="text-[0.68rem] uppercase tracking-[0.12em] font-semibold text-np-faint">
           Connection type
@@ -28,6 +29,14 @@ export function ConnectionRiskBadge({ risk }: Props) {
           </li>
         ))}
       </ul>
+    </>
+  );
+
+  if (embedded) return <div>{inner}</div>;
+
+  return (
+    <div className="np-card px-4 py-3">
+      {inner}
     </div>
   );
 }
