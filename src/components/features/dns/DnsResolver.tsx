@@ -211,8 +211,23 @@ export default function DnsResolver() {
         <p className="text-np-muted text-[0.88rem] mt-1">
           See how a domain is configured — where it points on the web, which servers handle email, and who registered it. Enter a domain name, or an IP address to look up its hostname.
         </p>
-        <p className="text-[0.75rem] font-mono text-np-faint mt-1.5 leading-relaxed">
-          Record types: A, AAAA, MX, TXT, CNAME, NS, SOA · PTR for reverse DNS · DoH resolver · RDAP registration
+        <p className="text-[0.8rem] text-np-muted mt-2.5 leading-relaxed">
+          <span className="font-medium text-np">Record types:</span>{' '}
+          {DNS_LOOKUP_GLOSSARY.filter((entry) => !['PTR', 'DoH', 'RDAP'].includes(entry.term)).map((entry, index) => (
+            <span key={entry.term}>
+              {index > 0 && ', '}
+              <span className="font-mono font-medium text-accent">{entry.term}</span>
+            </span>
+          ))}
+          <span className="text-np-faint px-1.5" aria-hidden>·</span>
+          <span className="font-mono font-medium text-accent">PTR</span>
+          {' '}for reverse DNS
+          <span className="text-np-faint px-1.5" aria-hidden>·</span>
+          <span className="font-mono font-medium text-accent">DoH</span>
+          {' '}resolver
+          <span className="text-np-faint px-1.5" aria-hidden>·</span>
+          <span className="font-mono font-medium text-accent">RDAP</span>
+          {' '}registration
         </p>
         <details className="mt-2.5 group">
           <summary className="text-[0.75rem] text-accent/80 hover:text-accent cursor-pointer list-none flex items-center gap-1.5 transition-colors [&::-webkit-details-marker]:hidden">
