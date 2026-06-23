@@ -261,7 +261,7 @@ export default function IpDiscovery() {
         </BentoTile>
 
         <LatencyTile
-          rttMs={data.clientTcpRtt}
+          colo={data.colo}
           className="animate-fade-up"
           style={{ '--delay': '0.03s' } as React.CSSProperties}
         />

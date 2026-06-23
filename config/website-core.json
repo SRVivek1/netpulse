@@ -6,7 +6,30 @@
     },
     "tiles": {
       "ipAddress": { "title": "Your IP address" },
-      "latency": { "title": "Latency" },
+      "latency": {
+        "title": "Latency",
+        "summary": "How long it takes your browser to reach our nearest server and back.",
+        "measuring": "Measuring live ping…",
+        "footer": "Live HTTP ping to the edge · not a download speed test",
+        "helpTitle": "What does this measure?",
+        "glossary": [
+          {
+            "term": "Latency",
+            "label": "Round-trip time",
+            "description": "Time for a small request to travel to the server and return. Lower is better."
+          },
+          {
+            "term": "Jitter",
+            "label": "Stability",
+            "description": "How much latency varies between samples. Lower means a more stable connection."
+          },
+          {
+            "term": "Edge server",
+            "label": "Where we measure",
+            "description": "The closest Cloudflare location handling your traffic. This measures distance to that server, not to every website on the internet."
+          }
+        ]
+      },
       "location": { "title": "Location" },
       "network": { "title": "Network & ISP" },
       "protocol": { "title": "Protocol & TLS" },

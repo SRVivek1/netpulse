@@ -74,9 +74,26 @@ export type AppConfig = Pick<SiteConfig,
   features: Record<string, FeatureFlag>;
 };
 
+export interface LatencyGlossaryEntry {
+  term: string;
+  label: string;
+  description: string;
+}
+
+export interface LatencyTileCopy {
+  title: string;
+  summary: string;
+  measuring: string;
+  footer: string;
+  helpTitle: string;
+  glossary: LatencyGlossaryEntry[];
+}
+
 export interface WebsiteCoreConfig {
   ipDiscovery: {
     sections: { exploreConnection: string; advancedDetails: string };
-    tiles: Record<string, { title: string }>;
+    tiles: Record<string, { title: string }> & {
+      latency: LatencyTileCopy;
+    };
   };
 }
