@@ -156,7 +156,7 @@ export default function SpeedTest() {
   };
 
   const gaugeUnit: 'Mbps' | 'ms' = phase === 'ping' ? 'ms' : 'Mbps';
-  const gaugeUnitLabel = phase === 'done' ? 'Mbps Download (Peak)' : undefined;
+  const gaugeUnitLabel = phase === 'done' ? 'Peak download · Mbps' : undefined;
 
   const gaugeValue = useMemo(() => {
     if (phase === 'ping') return livePingMs ?? 0;

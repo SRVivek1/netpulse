@@ -21,15 +21,15 @@ export interface SpeedGaugeProps {
 function phaseStatusClass(phase: SpeedPhase | 'idle'): string {
   switch (phase) {
     case 'ping':
-      return 'text-blue-400';
+      return 'speed-gauge-hub__phase--ping';
     case 'download':
-      return 'text-cyan-400';
+      return 'speed-gauge-hub__phase--download';
     case 'upload':
-      return 'text-fuchsia-400';
+      return 'speed-gauge-hub__phase--upload';
     case 'done':
-      return 'text-emerald-400';
+      return 'speed-gauge-hub__phase--done';
     default:
-      return 'text-np-muted';
+      return 'speed-gauge-hub__phase--idle';
   }
 }
 
@@ -70,6 +70,7 @@ export function SpeedGauge({
   const goDisabled = cooldownMs > 0;
   const showIdleOverlay = showGoButton && !hasResult;
   const showRetestAction = showGoButton && hasResult;
+  const valueSizeClass = displayValue.length >= 4 ? 'text-4xl' : 'text-5xl';
 
   const ariaLabel =
     value > 0
@@ -123,32 +124,24 @@ export function SpeedGauge({
 
       <div
         className={cn(
-          'absolute inset-8 rounded-full flex flex-col justify-center items-center text-center shadow-inner group',
-          'bg-[color-mix(in_srgb,var(--np-bg-base)_80%,black)]',
-          'border border-np backdrop-blur-xl',
+          'speed-gauge-hub absolute inset-8 rounded-full flex flex-col justify-center items-center text-center group',
         )}
       >
-        <p
-          className={cn(
-            'text-[10px] font-mono tracking-widest uppercase mb-1',
-            phaseStatusClass(phase),
-          )}
-        >
-          {phaseLabel}
-        </p>
+        {!showIdleOverlay && (
+          <div className="flex flex-col items-center px-3">
+            <p className={cn('speed-gauge-hub__phase mb-1.5', phaseStatusClass(phase))}>
+              {phaseLabel}
+            </p>
 
-        <div className="flex items-baseline justify-center select-none min-h-[4rem] px-2">
-          <span
-            className={cn(
-              'font-extrabold tracking-tighter text-np font-mono tabular-nums leading-none',
-              displayValue.length >= 4 ? 'text-4xl' : 'text-5xl',
-            )}
-          >
-            {displayValue}
-          </span>
-        </div>
+            <div className="flex items-baseline justify-center select-none min-h-[3.25rem]">
+              <span className={cn('speed-gauge-hub__value', valueSizeClass)}>
+                {displayValue}
+              </span>
+            </div>
 
-        <p className="text-xs font-mono text-np-faint uppercase mt-1 px-2">{resolvedUnitLabel}</p>
+            <p className="speed-gauge-hub__unit mt-1.5">{resolvedUnitLabel}</p>
+          </div>
+        )}
 
         {showRetestAction && (
           <button
@@ -156,33 +149,24 @@ export function SpeedGauge({
             onClick={onStart}
             disabled={goDisabled}
             className={cn(
-              'mt-3 px-4 py-2 rounded-full flex flex-col items-center justify-center transition-all duration-300',
-              'bg-gradient-to-tr from-cyan-500/10 to-indigo-500/10',
-              'hover:from-cyan-500/20 hover:to-indigo-500/20 border border-cyan-500/30',
-              'speed-glow-teal',
+              'speed-gauge-hub__cta mt-3 px-5 py-2 rounded-full flex flex-col items-center justify-center transition-all duration-300',
               goDisabled
                 ? 'opacity-60 cursor-not-allowed'
-                : 'cursor-pointer hover:scale-105',
+                : 'cursor-pointer hover:scale-105 speed-glow-teal',
             )}
             aria-label="Retest speed"
           >
             {goDisabled ? (
               <>
-                <span className="text-sm font-black tracking-widest text-np font-mono">
+                <span className="text-sm font-black tracking-widest font-mono">
                   {cooldownSec}s
                 </span>
-                <span className="text-[9px] font-mono tracking-widest text-cyan-400 uppercase mt-0.5 opacity-80">
-                  Cooldown
-                </span>
+                <span className="speed-gauge-hub__cta-sub mt-0.5">Cooldown</span>
               </>
             ) : (
               <>
-                <span className="text-sm font-black tracking-widest text-np font-mono">
-                  TEST
-                </span>
-                <span className="text-[9px] font-mono tracking-widest text-cyan-400 uppercase mt-0.5 opacity-80">
-                  Retest Stack Pipeline
-                </span>
+                <span className="text-sm font-black tracking-widest font-mono">TEST</span>
+                <span className="speed-gauge-hub__cta-sub mt-0.5">Retest</span>
               </>
             )}
           </button>
@@ -194,31 +178,32 @@ export function SpeedGauge({
             onClick={onStart}
             disabled={goDisabled}
             className={cn(
-              'absolute inset-0 rounded-full flex flex-col items-center justify-center transition-all duration-300 cursor-pointer',
-              'bg-gradient-to-tr from-cyan-500/10 to-indigo-500/10',
-              'hover:from-cyan-500/20 hover:to-indigo-500/20 border border-cyan-500/30',
-              'group-hover:scale-105 speed-glow-teal',
-              goDisabled && 'opacity-60 cursor-not-allowed hover:scale-100',
+              'speed-gauge-hub__cta speed-gauge-hub__cta--overlay absolute inset-0 rounded-full flex flex-col items-center justify-center transition-all duration-300',
+              goDisabled
+                ? 'opacity-60 cursor-not-allowed'
+                : 'cursor-pointer group-hover:scale-[1.02] speed-glow-teal',
             )}
             aria-label="Start speed test"
           >
             {goDisabled ? (
               <>
-                <span className="text-xl font-black tracking-widest text-np font-mono">
+                <span className="text-xl font-black tracking-widest font-mono">
                   {cooldownSec}s
                 </span>
-                <span className="text-[9px] font-mono tracking-widest text-cyan-400 uppercase mt-1 opacity-80">
-                  Cooldown
-                </span>
+                <span className="speed-gauge-hub__cta-sub mt-1">Cooldown</span>
               </>
             ) : (
               <>
-                <span className="text-3xl font-black tracking-widest text-np font-mono drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]">
-                  GO
+                <span
+                  className={cn(
+                    'speed-gauge-hub__phase mb-2',
+                    phaseStatusClass(phase),
+                  )}
+                >
+                  {phaseLabel}
                 </span>
-                <span className="text-[9px] font-mono tracking-widest text-cyan-400 uppercase mt-1 opacity-80">
-                  Initialize Stack
-                </span>
+                <span className="text-4xl font-black tracking-widest font-mono">GO</span>
+                <span className="speed-gauge-hub__cta-sub mt-2">Start test</span>
               </>
             )}
           </button>
